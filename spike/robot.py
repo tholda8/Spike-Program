@@ -3,7 +3,7 @@ from pybricks.pupdevices import *
 from pybricks.hubs import PrimeHub
 from maths import *
 from umath import pi
-
+from pybricks.tools import wait
     
 
 class rdevice:
@@ -26,11 +26,14 @@ class robot:
         pass
     def stop(self, brake = True):
         if brake:
+            self.lM.hold()
+            self.rM.hold()
+            wait(200)
             self.lM.brake()
             self.rM.brake()
         else:
-            self.lM.stop()
-            self.rM.stop()
+            self.lM.brake()
+            self.rM.brake()
         pass
     
     def addDevice(self, device:rdevice):
@@ -58,14 +61,15 @@ class motor(rdevice):
     def Update(self):
         self.deltaAngle = self.angleRad() - self.lastAngle
         self.lastAngle = self.angleRad()
-        #print("deltaAngle: ", self.deltaAngle, " | ", self.angleRad(), " | ", self.lastAngle, " ",pi)
         pass
     
     def brake(self):
         self.m_motor.brake()
         pass
     
-
+    def hold(self):
+        self.m_motor.hold()
+        pass
     
     def angle(self):
         return float(self.m_motor.angle())
@@ -86,8 +90,8 @@ class hub:
         self.angleOffset = self.m_hub.imu.rotation(Axis.Z)
 
 def navigate(lM:motor, rM:motor, hub:hub, diameter):
-    scalar = (-lM.deltaAngle + rM.deltaAngle) / 4 * diameter
-    vec = scalar * mat2.rotation(-hub.angleRad()) * vec2(1, 0)
+    scalar = (-lM.deltaAngle*diameter + rM.deltaAngle*diameter) * 0.25
+    vec = scalar * mat2.rotation(hub.angleRad()) * vec2(1, 0)
     lM.Update()
     rM.Update()
     

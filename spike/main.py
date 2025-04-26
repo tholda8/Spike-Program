@@ -1,16 +1,26 @@
-
-from driveFunc import *
-from setup import *
-from maths import *
+from setup import *                                                                                                                                                                                                                                                                                
 from pybricks.tools import wait
 
- 
-print("start")
+def test():
+    drive.toPos(vec2(0,10))
+    drive.toPos(vec2(30,0))
+    drive.toPos(vec2(0,0), backwards=True)
+    drive.rotate(0)
 
-toPos(vec2(10,10), 400) 
+# drive.setPreciseMode()
+# test()
+
+drive.setDefaultMode()
+test()
+
+# drive.setFastMode()
+# test()
+
+# drive.setAggressiveMode()
+# test()
+
+# drive.straight(20)
+
 wait(1000)
-print(r.pos)
-#toPos(vec2(0,10), 400) 
-r.update()
+print(r.pos, " | ", r.hub.angle(), "°")
 wait(1000)
-                    
