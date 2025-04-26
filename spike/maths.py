@@ -94,3 +94,12 @@ class mat2:
         return self.m[0][0] * self.m[1][1] - self.m[0][1] * self.m[1][0]
 
     def transpose(self):  return mat2(self.m[0][0], self.m[1][0], self.m[0][1], self.m[1][1])
+    
+    def adj(self):
+        return mat2(self.m[1][1], -self.m[0][1], -self.m[1][0], self.m[0][0]) # adj(Matrix) = (Matrix of minors)^T
+    
+    def inverse(self):
+        det = self.det() # det^(-1)*adj(Matrix) = Matrix^(-1)
+        if det == 0:
+            raise ValueError("Matrix is singular and cannot be inverted.")
+        return 1/det * self.adj()
