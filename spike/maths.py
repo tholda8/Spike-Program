@@ -2,6 +2,47 @@ from umath import cos, sin
 
 
 
+
+def generateBezierCurve(p0, p1, p2, p3, num_points=10):
+    """Generate points on a cubic Bezier curve.
+
+    Args:
+        p0 (vec2): The starting point of the curve.
+        p1 (vec2): The first control point.
+        p2 (vec2): The second control point.
+        p3 (vec2): The ending point of the curve.
+        num_points (int): The number of points to generate on the curve.
+
+    Returns:
+        list: A list of vec2 points on the cubic Bezier curve.
+    """
+    points = []
+    for i in range(num_points + 1):
+        t = i / num_points
+        points.append(bezier(t, p0, p1, p2, p3))
+    return points
+
+def bezier(t, p0, p1, p2, p3):
+    """Calculate a point on a cubic Bezier curve.
+
+    Args:
+        t (float): The parameter t, where 0 <= t <= 1.
+        p0 (vec2): The starting point of the curve.
+        p1 (vec2): The first control point.
+        p2 (vec2): The second control point.
+        p3 (vec2): The ending point of the curve.
+
+    Returns:
+        vec2: A point on the cubic Bezier curve at parameter t.
+    """
+    u = 1 - t
+    p = u**3 * p0  # (1-t)^3 * P0
+    p += 3 * u**2 * t * p1  # 3(1-t)^2 * t * P1
+    p += 3 * u * t**2 * p2  # 3(1-t) * t^2 * P2
+    p += t**3 * p3  # t^3 * P3
+
+    return p
+
 def sign(x):
     if x >0:
         return 1
@@ -31,8 +72,6 @@ class vec2:
         self.x = x
         self.y = y
 
-    
-    
     def __add__(self, other):
         return vec2(self.x + other.x, self.y + other.y)
 
@@ -42,11 +81,21 @@ class vec2:
     def __mul__(self, scalar: float):
         return vec2(self.x * scalar, self.y * scalar)
 
+    def __rmul__(self, scalar: float):
+        return self * scalar
+
     def __truediv__(self, scalar: float):
         return vec2(self.x / scalar, self.y / scalar)
 
+    def __eq__(self, other):
+        return self.x == other.x and self.y == other.y
+
     def __repr__(self):
         return f"vec2({self.x}, {self.y})"
+
+    def length(self):
+        """Calculate the length (magnitude) of the vector."""
+        return (self.x**2 + self.y**2)**0.5
 
 class mat2:
     def __init__(self, a: float, b:float , c:float, d:float):
