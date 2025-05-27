@@ -1,18 +1,15 @@
-from setup import *                                                                                                                                                                                                                                                                                
-from pybricks.tools import wait
+from bear_rescue import *
+from imgs import *
+from screen import *
 
-def test():
-    drive.toPos(vec2(0,0),backwards=True)
-    drive.toPos(vec2(0,10))
-    drive.toPos(vec2(30,0))
-    drive.toPos(vec2(0,0), backwards=True)
-    drive.rotate(0)
 
-drive.setDefaultMode()
-# drive.bezier(vec2(0,0), vec2(26,50), vec2(69,-36), vec2(100,0),20) #/\/
-drive.bezier(vec2(0,0), vec2(20,32), vec2(40,31), vec2(60,0),20) #/\
-test()
+menu = Screen(drive.robot.hub)
+menu.addPage(Page(bear_rescue, icon=beari, image=arrow, delta=110))
+menu.addPage(Page(rotate, icon= fish, image = [fish,fish1], delta = 500))
+menu.addPage(Page(lambda: play(megalovania, 0.95), icon=smile, image=[skull, skull,skull, skull, skull2], delta=500))
 
-wait(1000)
-print(r.pos, " | ", r.hub.angle(),"°")
-wait(1000)
+menu.start()
+while True:
+    menu.update()
+
+

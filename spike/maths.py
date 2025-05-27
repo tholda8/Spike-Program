@@ -1,4 +1,4 @@
-from umath import cos, sin
+from umath import cos, sin, atan2, pi
 
 
 
@@ -67,6 +67,12 @@ def minV(x,v):
         return v
     return x
 
+def avr(*x):
+    """Calculate the average of a list of numbers."""
+    if len(x) == 0:
+        return 0
+    return sum(x) / len(x)
+
 class vec2:
     def __init__(self, x: float, y: float):
         self.x = x
@@ -96,6 +102,16 @@ class vec2:
     def length(self):
         """Calculate the length (magnitude) of the vector."""
         return (self.x**2 + self.y**2)**0.5
+    
+    def normalize(self):
+        """Normalize the vector to have a length of 1."""
+        length = self.length()
+        if length == 0:
+            raise print("Cannot normalize a zero-length vector.")
+        return vec2(self.x / length, self.y / length)
+    def xAngle(self):
+        """Calculate the angle of the vector in radians."""
+        return atan2(self.y, self.x)
 
 class mat2:
     def __init__(self, a: float, b:float , c:float, d:float):
