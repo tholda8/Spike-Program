@@ -25,6 +25,8 @@ class robot:
         self.lM.setSpeed(lSpeed)
         self.rM.setSpeed(rSpeed)
         pass
+    
+    
     def stop(self, brake = True):
         if brake:
             self.lM.hold()
@@ -50,7 +52,7 @@ class Ultrasonic(rdevice):
         self.m_sensor = UltrasonicSensor(port)
         
     def distance(self):
-        return self.m_sensor.distance()
+        return self.m_sensor.distance()/10
     
     def angle(self):
         return self.m_sensor.angle()
@@ -103,6 +105,7 @@ class motor(rdevice):
     def angleRad(self):
         return float(self.m_motor.angle())/180 * pi - self.offset
 
+# tvoje máma
 class hub:
     def __init__(self):
         self.m_hub = PrimeHub()

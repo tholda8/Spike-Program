@@ -68,10 +68,11 @@ def minV(x,v):
     return x
 
 def avr(*x):
-    """Calculate the average of a list of numbers."""
-    if len(x) == 0:
-        return 0
-    return sum(x) / len(x)
+    if len(x) == 1 and isinstance(x[0], (list, tuple)):
+        values = x[0]
+    else:
+        values = x
+    return sum(values) / len(values) if values else 0
 
 class vec2:
     def __init__(self, x: float, y: float):

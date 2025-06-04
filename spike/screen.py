@@ -50,7 +50,7 @@ class Screen:
                 pass
             self.pages[self.currPage].renderImage()
             self.hub.color(Color.MAGENTA)
-            self.hub.setOffButton(Button.CENTER)
+            self.hub.setOffButton(Button.BLUETOOTH)
             self.pages[self.currPage].func()
             raise SystemExit("Exiting screen")
     

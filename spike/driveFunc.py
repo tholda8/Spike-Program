@@ -4,6 +4,8 @@ from umath import *
 from robot import *
 from pybricks.tools import wait
 
+#todo circle to pos background
+
 class driveManager:
     def __init__(self, robot:robot):
         self.robot = robot
@@ -16,6 +18,7 @@ class driveManager:
         self.cFinish = vec2(0,0)
         #multitasking
         self.tasks = []
+        self.bearsetup()
 
     def setDefaultMode(self):
         #both
@@ -27,9 +30,9 @@ class driveManager:
         self.brake = True
         #rotate
         self.tolDiff = pi/180
-        self.accuracy = 0.0015
-        self.racc = 555
-        self.rdeacc = 555
+        self.accuracy = 0.01
+        self.racc = 500
+        self.rdeacc = 500
         self.braker = True
     
     def setFastMode(self):
@@ -107,6 +110,51 @@ class driveManager:
         self.rdeacc = 555
         self.braker = True   
     
+    
+    def bearsetup(self):
+        self.gotbear = False
+
+    def hunter(self, value=30):
+        #print(self.robot.devices[3].distance())
+        if self.robot.devices[3].distance() > value:
+            print("hunt", self.robot.devices[3].distance())
+            self.close()
+            self.stopTasks()
+            self.robot.stop()
+            self.gotbear = True
+            return True
+        return False
+        
+    def skener(self, uvalues, sample = 10, value=40):
+        uvalues.append(self.robot.devices[2].distance())
+        if len(uvalues) > sample:
+            uvalues.pop(0)
+        if avr(uvalues) > value:
+            print("sken", avr(uvalues))
+            self.robot.stop()
+            return True
+        
+    def sken(self, distance, value, sample=10):
+        uvalues = []
+        self.toPos(vec2(110,distance), background=True)
+        while self.isTasksRunning():
+            if self.hunter() or self.skener(uvalues, sample, value):
+                return None
+            self.runTasks()
+            
+    def hunt(self, distance):
+        if self.gotbear:
+            return None
+        self.rotate(180)
+        self.toPos(vec2(23, self.robot.pos.y), background=True)
+        while self.isTasksRunning():
+            if self.hunter():
+                self.stopTasks()
+                self.robot.stop()
+                return
+            self.runTasks()
+        self.close()
+    
     def setMotorsToDef(self):
         self.robot.devices[0].setDefAngle()
         self.robot.devices[1].setDefAngle()
@@ -116,8 +164,17 @@ class driveManager:
         self.turnMotor(1,0, background=background)
     
     def close(self, background = False):
-        self.turnMotor(0,35, background=True)
-        self.turnMotor(1,-35, background=background)
+        if background:
+            self.turnMotor(0,35, background=True)
+            self.turnMotor(1,-35, background=background)
+        else:
+            self.turnMotor(0,35, background=True)
+            self.turnMotor(1,-35, background=True)
+            a = 0
+            while a < 500 and self.isTasksRunning():
+                self.runTasks()
+                a += 1
+            self.stopTasks()
     
     def turnMotorRad(self, deviceID, angle:float, speed = 1000, background = False):
         if background:
@@ -290,7 +347,15 @@ class driveManager:
         return (a2 - a1 + pi) % (2*pi) - pi
     
     
-    def circleToPos(self,pos, speed = 1000, connect = [False, False], accuracy = 0.2, backwards = False):
+    def circleToPos(self,pos, speed = 1000, connect = [False, False], accuracy = 0.2, backwards = False, background = False):
+        if background:
+            self.addTask(self.circleToPosGen(pos, speed = speed, connect = connect, accuracy = accuracy, backwards = backwards))
+        else:
+            for _ in self.circleToPosGen(pos, speed = speed, connect = connect, accuracy = accuracy, backwards = backwards):
+                self.runTasks()
+                pass
+    
+    def circleToPosGen(self,pos, speed = 1000, connect = [False, False], accuracy = 0.2, backwards = False):
         startPos = self.robot.pos
         if accuracy == 0.2 and connect[1]:
             accuracy = 13
@@ -317,8 +382,9 @@ class driveManager:
                 self.robot.setSpeed(cSpeed, cSpeed*ratio)
             else:
                 self.robot.setSpeed(cSpeed*ratio, cSpeed)
-            #print(self.robot.pos)
+            
             self.robot.update()
+            yield
         if not connect[1]:
             self.robot.stop(self.brake)
 
