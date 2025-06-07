@@ -194,7 +194,6 @@ class driveManager:
     
     def turnMotorRadGen(self, deviceID, angle:float, speed = 1000, simple = False):
         dif = self.angleDiff(self.robot.devices[deviceID].angleRad(), angle, simple=simple)
-        dif = self.angleDiff(self.robot.devices[deviceID].angleRad(), angle, simple=simple)
         while fabs(dif) > self.tolDiff*2:
             dif = self.angleDiff(self.robot.devices[deviceID].angleRad(), angle, simple=simple)
             self.robot.devices[deviceID].setSpeed(sign(dif) * clamp(speed*abs(dif)*0.5,110,200))
