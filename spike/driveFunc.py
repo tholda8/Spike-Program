@@ -118,9 +118,9 @@ class driveManager:
         #print(self.robot.devices[3].distance())
         if self.robot.devices[3].distance() > value:
             print("hunt", self.robot.devices[3].distance())
-            self.close()
             self.stopTasks()
             self.robot.stop()
+            self.close()
             self.gotbear = True
             return True
         return False
@@ -139,12 +139,14 @@ class driveManager:
         self.toPos(vec2(110,distance), background=True)
         while self.isTasksRunning():
             if self.hunter() or self.skener(uvalues, sample, value):
-                return None
+                
+                return
             self.runTasks()
             
     def hunt(self, distance):
         if self.gotbear:
             return None
+        self.straight(-10, speed=1000, backwards=True)
         self.rotate(180)
         self.toPos(vec2(23, self.robot.pos.y), background=True)
         while self.isTasksRunning():
@@ -160,41 +162,47 @@ class driveManager:
         self.robot.devices[1].setDefAngle()
     
     def open(self, background = False):
-        self.turnMotor(0,0, background=True)
-        self.turnMotor(1,0, background=background)
+        self.turnMotor(0,0, background=True, simple = True)
+        self.turnMotor(1,0, background=background, simple = True)
     
     def close(self, background = False):
+        angle = 180
         if background:
-            self.turnMotor(0,35, background=True)
-            self.turnMotor(1,-35, background=background)
+            self.turnMotor(0,-angle, background=True, simple = True)
+            self.turnMotor(1,angle, background=background, simple = True)
         else:
-            self.turnMotor(0,35, background=True)
-            self.turnMotor(1,-35, background=True)
+            self.turnMotor(0,-angle, background=True, simple = True)
+            self.turnMotor(1,angle, background=True, simple = True)
             a = 0
-            while a < 500 and self.isTasksRunning():
+            while a < 1000 and self.isTasksRunning():
                 self.runTasks()
                 a += 1
+            if a >= 1000:
+                print("Closing motors timed out, stopping tasks")
             self.stopTasks()
+            self.robot.devices[0].hold()
+            self.robot.devices[1].hold()
     
-    def turnMotorRad(self, deviceID, angle:float, speed = 1000, background = False):
+    def turnMotorRad(self, deviceID, angle:float, speed = 1000, background = False, simple = False):
         if background:
-            self.addTask(self.turnMotorRadGen(deviceID, angle, speed = speed))
+            self.addTask(self.turnMotorRadGen(deviceID, angle, speed = speed, simple=simple))
         else:
-            for _ in self.turnMotorRadGen(deviceID, angle, speed = speed):
+            for _ in self.turnMotorRadGen(deviceID, angle, speed = speed, simple=simple):
                 self.runTasks()
                 pass
     
-    def turnMotorRadGen(self, deviceID, angle:float, speed = 1000):
-        dif = self.angleDiff(self.robot.devices[deviceID].angleRad(), angle)
+    def turnMotorRadGen(self, deviceID, angle:float, speed = 1000, simple = False):
+        dif = self.angleDiff(self.robot.devices[deviceID].angleRad(), angle, simple=simple)
+        dif = self.angleDiff(self.robot.devices[deviceID].angleRad(), angle, simple=simple)
         while fabs(dif) > self.tolDiff*2:
-            dif = self.angleDiff(self.robot.devices[deviceID].angleRad(), angle)
+            dif = self.angleDiff(self.robot.devices[deviceID].angleRad(), angle, simple=simple)
             self.robot.devices[deviceID].setSpeed(sign(dif) * clamp(speed*abs(dif)*0.5,110,200))
             yield
         self.robot.devices[deviceID].hold()
         
         
-    def turnMotor(self, deviceID, angle:float, speed = 1000, background = False):
-        self.turnMotorRad(deviceID, angle/180 * pi, speed=speed, background=background)
+    def turnMotor(self, deviceID, angle:float, speed = 1000, background = False, simple = False):
+        self.turnMotorRad(deviceID, angle/180 * pi, speed=speed, background=background, simple=simple)
     
     def isTasksRunning(self, numOfTasks = 0):
         if len(self.tasks) > numOfTasks:
@@ -341,7 +349,9 @@ class driveManager:
         aspeed = fabs(angleInit) * self.racc + self.defspeed
         return maxV(maxV(rspeed,aspeed),speed)
     
-    def angleDiff(self, angle1:float, angle2:float):
+    def angleDiff(self, angle1:float, angle2:float, simple = False):
+        if simple:
+            return angle2 - angle1
         a1 = (angle1) % (2*pi)
         a2 = (angle2) % (2*pi)
         return (a2 - a1 + pi) % (2*pi) - pi

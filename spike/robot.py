@@ -144,7 +144,10 @@ class hub:
     
     def color(self, color: Color):
         self.m_hub.light.on(color)
-        
+    
+    def colorAnimate(self, colors, duration=100):
+        self.m_hub.light.animate(colors, duration)
+    
     def animate(self, animation, delta):
         self.m_hub.display.animate(animation, delta)
     def image(self, image):

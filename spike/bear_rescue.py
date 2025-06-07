@@ -19,9 +19,9 @@ def start():
     drive.stopTasks()
 
 def finish():
-    drive.toPos(vec2(110,55), connect=[False,True], backwards=True, tolerance=5)
+    drive.toPos(vec2(110,60), connect=[False,True], backwards=True, tolerance=5)
     #drive.circleToPos(vec2(110,55), connect=[False,True], backwards=True)
-    drive.circleToPos(vec2(65,55), connect=[True,True], backwards=True)
+    drive.circleToPos(vec2(65,60), connect=[True,True], backwards=True)
     drive.circleToPos(vec2(55,82), connect=[True,True], backwards=True)
     drive.circleToPos(vec2(20,82), connect=[True,True], backwards=True)
     drive.circleToPos(vec2(20,50), connect=[True,True], backwards=True)
@@ -29,15 +29,26 @@ def finish():
 
     drive.rotate(90)
 def bear_rescue():
+    #drive.robot.devices.append(Ultrasonic(Port.C))
+    #drive.robot.pos = vec2(17,11.3)
+    #drive.robot.hub.addOffset(-90)
     drive.setDefaultMode()
     drive.setMotorsToDef()
     
+    
+    
+    
     drive.close()
+    
+    drive.robot.hub.colorAnimate([Color.MAGENTA, Color.NONE,Color.WHITE, Color.NONE], 100)
+    while not drive.robot.hub.isButtonPressed(Button.CENTER):
+        pass
+    drive.robot.hub.color(Color.MAGENTA)
     start()
     while not bear():
         drive.open()
         drive.gotbear = False
-        drive.sken(distance = 250, value = 165, sample=20)
+        drive.sken(distance = 250, value = 171, sample=30)
         drive.stopTasks()
         drive.robot.stop()
         drive.hunt(distance = 105)
