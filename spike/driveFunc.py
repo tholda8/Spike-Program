@@ -136,7 +136,7 @@ class driveManager:
         
     def sken(self, distance, value, sample=10):
         uvalues = []
-        self.toPos(vec2(110,distance), background=True)
+        self.toPos(vec2(120,distance), background=True, speed=550)
         while self.isTasksRunning():
             if self.hunter() or self.skener(uvalues, sample, value):
                 
@@ -146,9 +146,10 @@ class driveManager:
     def hunt(self, distance):
         if self.gotbear:
             return None
-        self.straight(-10, speed=1000, backwards=True)
+        if self.robot.pos.y < 100:
+            self.straight(-10, speed=1000, backwards=True)
         self.rotate(180)
-        self.toPos(vec2(23, self.robot.pos.y), background=True)
+        self.toPos(vec2(21, self.robot.pos.y), background=True)
         while self.isTasksRunning():
             if self.hunter():
                 self.stopTasks()
@@ -166,7 +167,7 @@ class driveManager:
         self.turnMotor(1,0, background=background, simple = True)
     
     def close(self, background = False):
-        angle = 180
+        angle = 200
         if background:
             self.turnMotor(0,-angle, background=True, simple = True)
             self.turnMotor(1,angle, background=background, simple = True)

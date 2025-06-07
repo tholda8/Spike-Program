@@ -13,8 +13,8 @@ def start():
     drive.circleToPos(vec2(60,65), connect=[True,True])
     drive.circleToPos(vec2(110,65), connect=[True,True])
     drive.circleToPos(vec2(115,100), connect=[True,True])
-    drive.open(background=True)
-    drive.circleToPos(vec2(118,153), connect=[True,False])
+    drive.circleToPos(vec2(117,155), connect=[True,False])
+    drive.open(background=False)
     drive.rotate(90)
     drive.stopTasks()
 
@@ -29,7 +29,7 @@ def finish():
 
     drive.rotate(90)
 def bear_rescue():
-    #drive.robot.devices.append(Ultrasonic(Port.C))
+    drive.robot.devices.append(Ultrasonic(Port.C))
     #drive.robot.pos = vec2(17,11.3)
     #drive.robot.hub.addOffset(-90)
     drive.setDefaultMode()
@@ -48,7 +48,7 @@ def bear_rescue():
     while not bear():
         drive.open()
         drive.gotbear = False
-        drive.sken(distance = 250, value = 171, sample=30)
+        drive.sken(distance = 250, value = 175, sample=10)
         drive.stopTasks()
         drive.robot.stop()
         drive.hunt(distance = 105)
@@ -56,7 +56,7 @@ def bear_rescue():
         drive.robot.stop()
         print(drive.robot.pos)
         if drive.robot.pos.y < 130 or  drive.robot.pos.x < 90:
-            drive.toPos(vec2(110,160), backwards=True)
+            drive.toPos(vec2(115,160), backwards=True)
         drive.rotate(90)
         
     finish()

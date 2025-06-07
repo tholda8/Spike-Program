@@ -112,13 +112,18 @@ class hub:
         self.angleOffset = 0
         self.resetAngle()
         self.setOffButton(Button.BLUETOOTH)
+        self.switch = False
     def addOffset(self, offset):
         self.angleOffset += offset    
     
     def angle(self):
+        if self.switch:
+            return -self.m_hub.imu.rotation(Axis.Z) - self.angleOffset
         return self.m_hub.imu.rotation(Axis.Z) - self.angleOffset
     
     def angleRad(self):
+        if self.switch:
+            return (-self.m_hub.imu.rotation(Axis.Z) - self.angleOffset) / 180 * pi
         return (self.m_hub.imu.rotation(Axis.Z) - self.angleOffset) / 180 * pi
     
     def resetAngle(self):
