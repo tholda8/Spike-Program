@@ -12,11 +12,11 @@ def start():
     drive.circleToPos(vec2(60,75), connect=[True,True])
     drive.circleToPos(vec2(60,65), connect=[True,True])
     drive.circleToPos(vec2(110,65), connect=[True,True])
+    drive.open(background=True, time = 400)
     drive.circleToPos(vec2(115,100), connect=[True,True])
-    drive.circleToPos(vec2(117,155), connect=[True,False])
-    drive.open(background=False)
-    drive.rotate(90)
+    drive.circleToPos(vec2(115,155), connect=[True,False], accuracy=1.5)
     drive.stopTasks()
+    drive.rotate(90)
 
 def finish():
     drive.toPos(vec2(110,60), connect=[False,True], backwards=True, tolerance=5)
@@ -35,9 +35,6 @@ def bear_rescue():
     drive.setDefaultMode()
     drive.setMotorsToDef()
     
-    
-    
-    
     drive.close()
     
     drive.robot.hub.colorAnimate([Color.MAGENTA, Color.NONE,Color.WHITE, Color.NONE], 100)
@@ -48,14 +45,15 @@ def bear_rescue():
     while not bear():
         drive.open()
         drive.gotbear = False
-        drive.sken(distance = 250, value = 175, sample=10)
+        drive.sken(distance = 249, value = 175, sample=12)
         drive.stopTasks()
         drive.robot.stop()
         drive.hunt(distance = 105)
         drive.stopTasks()
         drive.robot.stop()
-        print(drive.robot.pos)
-        if drive.robot.pos.y < 130 or  drive.robot.pos.x < 90:
+        if drive.robot.pos.y > 249:
+            drive.circleToPos(drive.robot.pos + vec2(20,-20),backwards=True)
+        if drive.robot.pos.y < 110 or  drive.robot.pos.x < 90:
             drive.toPos(vec2(115,160), backwards=True)
         drive.rotate(90)
         

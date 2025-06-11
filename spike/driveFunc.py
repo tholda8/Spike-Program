@@ -29,7 +29,7 @@ class driveManager:
         self.turnCoeff = 3
         self.brake = True
         #rotate
-        self.tolDiff = pi/180
+        self.tolDiff = pi/90
         self.accuracy = 0.01
         self.racc = 500
         self.rdeacc = 500
@@ -149,7 +149,12 @@ class driveManager:
         if self.robot.pos.y < 100:
             self.straight(-10, speed=1000, backwards=True)
         self.rotate(180)
-        self.toPos(vec2(21, self.robot.pos.y), background=True)
+        print(self.robot.pos)
+        if self.robot.pos.y > 249:
+            self.toPos(vec2(90, 258), speed = 600)
+            self.toPos(vec2(21, 258), background=True, speed = 600)
+        else: 
+            self.toPos(vec2(21, self.robot.pos.y), background=True, speed = 600)
         while self.isTasksRunning():
             if self.hunter():
                 self.stopTasks()
@@ -162,20 +167,20 @@ class driveManager:
         self.robot.devices[0].setDefAngle()
         self.robot.devices[1].setDefAngle()
     
-    def open(self, background = False):
-        self.turnMotor(0,0, background=True, simple = True)
-        self.turnMotor(1,0, background=background, simple = True)
+    def open(self, background = False, time = 0):
+        self.turnMotor(0,0, background=True, simple = True, time = time)
+        self.turnMotor(1,0, background=background, simple = True, time = time)
     
     def close(self, background = False):
         angle = 200
         if background:
-            self.turnMotor(0,-angle, background=True, simple = True)
-            self.turnMotor(1,angle, background=background, simple = True)
+            self.turnMotor(0,-angle, background=True, simple = True, time = 400)
+            self.turnMotor(1,angle, background=background, simple = True, time = 400)
         else:
             self.turnMotor(0,-angle, background=True, simple = True)
             self.turnMotor(1,angle, background=True, simple = True)
             a = 0
-            while a < 1000 and self.isTasksRunning():
+            while a < 700 and self.isTasksRunning():
                 self.runTasks()
                 a += 1
             if a >= 1000:
@@ -184,25 +189,33 @@ class driveManager:
             self.robot.devices[0].hold()
             self.robot.devices[1].hold()
     
-    def turnMotorRad(self, deviceID, angle:float, speed = 1000, background = False, simple = False):
+    def turnMotorRad(self, deviceID, angle:float, speed = 1000, background = False, simple = False, time = 0):
         if background:
-            self.addTask(self.turnMotorRadGen(deviceID, angle, speed = speed, simple=simple))
+            self.addTask(self.turnMotorRadGen(deviceID, angle, speed = speed, simple=simple, time = time))
         else:
-            for _ in self.turnMotorRadGen(deviceID, angle, speed = speed, simple=simple):
+            for _ in self.turnMotorRadGen(deviceID, angle, speed = speed, simple=simple, time = time):
                 self.runTasks()
                 pass
     
-    def turnMotorRadGen(self, deviceID, angle:float, speed = 1000, simple = False):
+    def turnMotorRadGen(self, deviceID, angle:float, speed = 1000, simple = False, time = 0):
         dif = self.angleDiff(self.robot.devices[deviceID].angleRad(), angle, simple=simple)
-        while fabs(dif) > self.tolDiff*2:
+        dif = self.angleDiff(self.robot.devices[deviceID].angleRad(), angle, simple=simple)
+        doTime = True
+        if time == 0:
+            doTime = False
+        
+        while fabs(dif) > self.tolDiff*2 and (time > 0 or not doTime):
             dif = self.angleDiff(self.robot.devices[deviceID].angleRad(), angle, simple=simple)
             self.robot.devices[deviceID].setSpeed(sign(dif) * clamp(speed*abs(dif)*0.5,110,200))
+            time -= 1
             yield
         self.robot.devices[deviceID].hold()
+        if time == 0:
+            print("lol")
         
         
-    def turnMotor(self, deviceID, angle:float, speed = 1000, background = False, simple = False):
-        self.turnMotorRad(deviceID, angle/180 * pi, speed=speed, background=background, simple=simple)
+    def turnMotor(self, deviceID, angle:float, speed = 1000, background = False, simple = False, time = 0):
+        self.turnMotorRad(deviceID, angle/180 * pi, speed=speed, background=background, simple=simple, time=time)
     
     def isTasksRunning(self, numOfTasks = 0):
         if len(self.tasks) > numOfTasks:
