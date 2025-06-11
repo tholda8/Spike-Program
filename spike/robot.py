@@ -118,12 +118,12 @@ class hub:
     
     def angle(self):
         if self.switch:
-            return -self.m_hub.imu.rotation(Axis.Z) - self.angleOffset
+            return - (self.m_hub.imu.rotation(Axis.Z) - self.angleOffset)
         return self.m_hub.imu.rotation(Axis.Z) - self.angleOffset
     
     def angleRad(self):
         if self.switch:
-            return (-self.m_hub.imu.rotation(Axis.Z) - self.angleOffset) / 180 * pi
+            return -(self.m_hub.imu.rotation(Axis.Z) - self.angleOffset) / 180 * pi
         return (self.m_hub.imu.rotation(Axis.Z) - self.angleOffset) / 180 * pi
     
     def resetAngle(self):
