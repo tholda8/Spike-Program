@@ -110,59 +110,6 @@ class driveManager:
         self.rdeacc = 555
         self.braker = True   
     
-    
-    def bearsetup(self):
-        self.gotbear = False
-
-    def hunter(self, value=30):
-        #print(self.robot.devices[3].distance())
-        if self.robot.devices[3].distance() > value:
-            print("hunt", self.robot.devices[3].distance())
-            self.stopTasks()
-            self.robot.stop()
-            self.close()
-            self.gotbear = True
-            return True
-        return False
-        
-    def skener(self, uvalues, sample = 10, value=40):
-        uvalues.append(self.robot.devices[2].distance())
-        if len(uvalues) > sample:
-            uvalues.pop(0)
-        if avr(uvalues) > value:
-            print("sken", avr(uvalues))
-            self.robot.stop()
-            return True
-        
-    def sken(self, distance, value, sample=10):
-        uvalues = []
-        self.toPos(vec2(120,distance), background=True, speed=550)
-        while self.isTasksRunning():
-            if self.hunter() or self.skener(uvalues, sample, value):
-                
-                return
-            self.runTasks()
-            
-    def hunt(self, distance):
-        if self.gotbear:
-            return None
-        if self.robot.pos.y < 100:
-            self.straight(-10, speed=1000, backwards=True)
-        self.rotate(180)
-        print(self.robot.pos)
-        if self.robot.pos.y > 249:
-            self.toPos(vec2(90, 258), speed = 600)
-            self.toPos(vec2(21, 258), background=True, speed = 600)
-        else: 
-            self.toPos(vec2(21, self.robot.pos.y), background=True, speed = 600)
-        while self.isTasksRunning():
-            if self.hunter():
-                self.stopTasks()
-                self.robot.stop()
-                return
-            self.runTasks()
-        self.close()
-    
     def setMotorsToDef(self):
         self.robot.devices[0].setDefAngle()
         self.robot.devices[1].setDefAngle()

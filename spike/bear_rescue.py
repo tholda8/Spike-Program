@@ -7,6 +7,60 @@ def bear():
         return True
     return False
 
+gotbear = False
+def bearsetup():
+    global gotbear
+    gotbear = False
+
+def hunter(value=30):
+    global gotbear
+    if drive.robot.devices[3].distance() > value:
+        print("hunt", drive.robot.devices[3].distance())
+        drive.stopTasks()
+        drive.robot.stop()
+        drive.close()
+        gotbear = True
+        return True
+    return False
+    
+def skener(uvalues, sample = 10, value=40):
+    uvalues.append(drive.robot.devices[2].distance())
+    if len(uvalues) > sample:
+        uvalues.pop(0)
+    if avr(uvalues) > value:
+        print("sken", avr(uvalues))
+        drive.robot.stop()
+        return True
+    
+def sken(distance, value, sample=10):
+    uvalues = []
+    drive.toPos(vec2(120,distance), background=True, speed=550)
+    while drive.isTasksRunning():
+        if hunter() or skener(uvalues, sample, value):
+            return
+        drive.runTasks()
+        
+def hunt():
+    global gotbear
+    if gotbear:
+        return None
+    if drive.robot.pos.y < 100:
+        drive.straight(-10, speed=1000, backwards=True)
+    drive.rotate(180)
+    print(drive.robot.pos)
+    if drive.robot.pos.y > 249:
+        drive.toPos(vec2(90, 258), speed = 600)
+        drive.toPos(vec2(21, 258), background=True, speed = 600)
+    else: 
+        drive.toPos(vec2(21, drive.robot.pos.y), background=True, speed = 600)
+    while drive.isTasksRunning():
+        if hunter():
+            drive.stopTasks()
+            drive.robot.stop()
+            return
+        drive.runTasks()
+    drive.close()
+
 def start():
     drive.circleToPos(vec2(17,75), connect=[False,True])
     drive.circleToPos(vec2(60,75), connect=[True,True])
@@ -30,10 +84,15 @@ def finish():
     drive.rotate(90)
 def bear_rescue():
     drive.robot.devices.append(Ultrasonic(Port.C))
-    #drive.robot.pos = vec2(17,11.3)
-    #drive.robot.hub.addOffset(-90)
+    
+    drive.robot.pos = vec2(17,11.3)
+    drive.robot.hub.resetAngle()
+    drive.robot.hub.addOffset(-90)
+    
     drive.setDefaultMode()
     drive.setMotorsToDef()
+    
+    bearsetup()
     
     drive.close()
     
@@ -45,10 +104,10 @@ def bear_rescue():
     while not bear():
         drive.open()
         drive.gotbear = False
-        drive.sken(distance = 249, value = 175, sample=12)
+        sken(distance = 249, value = 175, sample=12)
         drive.stopTasks()
         drive.robot.stop()
-        drive.hunt(distance = 105)
+        hunt(distance = 105)
         drive.stopTasks()
         drive.robot.stop()
         if drive.robot.pos.y > 249:
@@ -58,40 +117,4 @@ def bear_rescue():
         drive.rotate(90)
         
     finish()
-    raise SystemExit
-    drive.toPos(vec2(120,210))
-
-    
-    if bear():
-        drive.close()
-        finish()
-        raise SystemExit
-
-    # chytani tak nejak
-    drive.toPos(vec2(115,260),background=True)
-    while drive.isTasksRunning() and not drive.robot.devices[2].distance() < 200 and not bear():
-        drive.runTasks()
-    drive.stopTasks()
-    drive.robot.stop()
-
-    if (drive.robot.pos - vec2(115,260)).length() < 2 and not bear():
-        drive.toPos(vec2(15,drive.robot.pos.y),background=True)
-        while drive.isTasksRunning() and not bear:
-            drive.runTasks()
-        drive.close()
-        drive.toPos(vec2(115,150),backwards=True)
-    elif not bear():
-        drive.toPos(vec2(15,drive.robot.pos.y),background=True)
-        while drive.isTasksRunning() and not bear():
-            drive.runTasks()
-        drive.close()
-        drive.toPos(vec2(115,150),backwards=True)
-    elif bear():
-        drive.close()
-        drive.toPos(vec2(115,150),backwards=True)
-
-    finish()
-
-    wait(1000)
-    print(drive.robot.pos, " | ", drive.robot.hub.angle(),"°")
-    wait(1000)
+    raise SystemExit("Bear rescued!")
