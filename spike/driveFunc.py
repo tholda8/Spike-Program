@@ -18,11 +18,10 @@ class driveManager:
         self.cFinish = vec2(0,0)
         #multitasking
         self.tasks = []
-        self.bearsetup()
 
     def setDefaultMode(self):
         #both
-        self.defspeed = 110
+        self.defspeed = 250
         #drive
         self.acc = 80
         self.deacc = 30
@@ -114,28 +113,6 @@ class driveManager:
         self.robot.devices[0].setDefAngle()
         self.robot.devices[1].setDefAngle()
     
-    def open(self, background = False, time = 0):
-        self.turnMotor(0,0, background=True, simple = True, time = time)
-        self.turnMotor(1,0, background=background, simple = True, time = time)
-    
-    def close(self, background = False):
-        angle = 200
-        if background:
-            self.turnMotor(0,-angle, background=True, simple = True, time = 400)
-            self.turnMotor(1,angle, background=background, simple = True, time = 400)
-        else:
-            self.turnMotor(0,-angle, background=True, simple = True)
-            self.turnMotor(1,angle, background=True, simple = True)
-            a = 0
-            while a < 700 and self.isTasksRunning():
-                self.runTasks()
-                a += 1
-            if a >= 1000:
-                print("Closing motors timed out, stopping tasks")
-            self.stopTasks()
-            self.robot.devices[0].hold()
-            self.robot.devices[1].hold()
-    
     def turnMotorRad(self, deviceID, angle:float, speed = 1000, background = False, simple = False, time = 0):
         if background:
             self.addTask(self.turnMotorRadGen(deviceID, angle, speed = speed, simple=simple, time = time))
@@ -210,10 +187,10 @@ class driveManager:
                 self.robot.setSpeed(aspeed*ratio, aspeed)
         self.robot.stop(self.brake)
 
-    def toPosGen(self, pos, speed = 1000, backwards = False, stop = True, turn = True, tolerance = 0, extraDist = 0, background = False, connect = [False, False]):
-        offset = self.robot.pos
-        angle = atan2((pos-offset).y,(pos-offset).x)
-        rotMat = mat2.rotation(-angle)
+    def toPosGen(self, pos, speed = 1000, backwards = False, stop = True, turn = True, tolerance = 0.0, extraDist = 0.0, background = False, connect = [False, False]):
+        offset:vec2 = self.robot.pos
+        angle:float = atan2((pos-offset).y,(pos-offset).x)
+        rotMat:mat2 = mat2.rotation(-angle)
         if backwards:
             angle += (pi)
         if turn and not connect[0]:
@@ -226,7 +203,7 @@ class driveManager:
         length = rotMat*(pos - offset)
         swap = sign(length.x - (rotMat*self.robot.pos).x)
         swap = 1
-        movedPos = rotMat*(self.robot.pos-offset)
+        movedPos:vec2 = rotMat*(self.robot.pos-offset)
         while(movedPos.x*swap < length.x*swap - tolerance):
             self.robot.update()
             self.calcDir(rotMat*(self.robot.pos-offset), length.x, self.calcSpeed(movedPos, length.x, speed, connect = connect),angle, backwards, extraDist)
@@ -237,7 +214,7 @@ class driveManager:
         elif not connect[1]:
             self.robot.stop(self.brake)
             
-    def toPos(self, pos, speed = 1000, backwards = False, stop = True, turn = True, tolerance = 0, extraDist = 10, background=False, connect = [False, False]):
+    def toPos(self, pos, speed = 1000, backwards = False, stop = True, turn = True, tolerance = 0.0, extraDist = 10.0, background=False, connect = [False, False]):
         if background:
             self.addTask(self.toPosGen(pos, speed = speed, backwards = backwards, stop = stop, turn = turn, tolerance = tolerance, extraDist = extraDist, background=background, connect=connect))
         else:
@@ -247,7 +224,7 @@ class driveManager:
     
 
         
-    def calcDir(self, pos, length, speed, offsetAngle, backwards = False, extraDist = 0):
+    def calcDir(self, pos, length, speed, offsetAngle, backwards = False, extraDist = 0.0):
         a2 = (self.robot.hub.angleRad()-offsetAngle) % (2*pi)
         pos = vec2(length + extraDist - pos.x, -pos.y)
         a1 = atan2(pos.y, pos.x) % (2*pi)

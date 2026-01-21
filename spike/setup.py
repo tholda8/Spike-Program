@@ -3,15 +3,9 @@ from maths import *
 from driveFunc import driveManager
 from robot import *
 
-r = robot(Port.E, Port.A, 8.7, 15.4,pos=vec2(17,11.3))
+r = robot(Port.D, Port.B, 5.75, 11.25,pos=vec2(0,0))
 r.lM.reverse = True
 r.rM.switchDir = True
 r.lM.switchDir = True
-r.hub.addOffset(-90)
-La = motor(Port.F)
-Ra = motor(Port.B)
-Us = Ultrasonic(Port.D)
-r.devices.append(La)
-r.devices.append(Ra)
-r.devices.append(Us)
+r.hub.addOffset(0)
 drive = driveManager(r)
