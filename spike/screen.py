@@ -29,10 +29,12 @@ class Screen:
     def update(self):
         
         if self.hub.isButtonPressed(Button.LEFT):
+            self.hub.beep(400, 50)
             self.currPage = (self.currPage - 1) % len(self.pages)
             self.renderPage()
             self.release(Button.LEFT)
         if self.hub.isButtonPressed(Button.RIGHT):
+            self.hub.beep(600, 50)
             self.currPage = (self.currPage + 1) % len(self.pages)
             self.renderPage()
             self.release(Button.RIGHT)
@@ -52,7 +54,7 @@ class Screen:
             self.hub.color(Color.MAGENTA)
             self.hub.setOffButton(Button.BLUETOOTH)
             self.pages[self.currPage].func()
-            raise SystemExit("Exiting screen")
+            #raise SystemExit("Exiting screen")
     
     def battery(self):
         max = 8400
@@ -91,7 +93,7 @@ class Screen:
             
     def release(self, button: Button):
         a = 0
-        while self.hub.isButtonPressed(button) and a < 200:
+        while self.hub.isButtonPressed(button) and a < 300:
             wait(10)
             a += 10
     def renderPage(self):

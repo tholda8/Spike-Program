@@ -273,12 +273,32 @@ def allignePos():
     drive.robot.hub.addOffset(halfs*90)
     
 
+def vyzvainit():
+    drive.robot.hub.m_hub.light.on(Color.RED)
+    #drive.robot.hub.m_hub.system.set_stop_button(Button.CENTER)
+    wait(10000)
 
+def mbludiste():
+    vyzvainit()
+    bludiste()
+
+def msprint():
+    vyzvainit() 
+    sprint()
+
+def mslalom():
+    vyzvainit()
+    slalom()
+
+def mmedved():
+    vyzvainit()
+    medved()
+
+def mkulicky():
+    vyzvainit()
+    kulicky()
 
 def vyzva():
-    drive.robot.addDevice(motor(Port.C))
-    drive.robot.addDevice(Ultrasonic(Port.F))
-    
     bludiste()
 
     pass
