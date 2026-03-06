@@ -1,7 +1,7 @@
 from pybricks.parameters import *
-from maths import *
+from spike.Device_manager.maths import *
 from driveFunc import driveManager
-from robot import *
+from spike.Device_manager.robot import *
 
 r = robot(Port.C, Port.E, 5.75, 11.25,pos=vec2(0,0))
 r.lM.reverse = True

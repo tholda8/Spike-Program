@@ -1,0 +1,1 @@
+#this is a package for the device manager, which is a collection of classes and functions that manage the devices on the robot. It is used to create a more organized and efficient way to manage the devices on the robot.
