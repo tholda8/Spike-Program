@@ -1,7 +1,7 @@
-from spike.Device_manager.maths import *
+from Device_manager.maths import *
 from setup import *
 from umath import *
-from spike.Device_manager.robot import *
+from Device_manager.robot import *
 from pybricks.tools import wait
 
 #todo circle to pos background
