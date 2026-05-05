@@ -1,7 +1,7 @@
 from pybricks.parameters import *
 from pybricks.pupdevices import *
 from pybricks.hubs import PrimeHub
-from spike.Device_manager.maths import *
+from Device_manager.maths import *
 from pybricks.tools import *
     
 
@@ -10,7 +10,7 @@ class rdevice:
         self.port = port
 
 
-class robot:
+class Robot:
     def __init__(self, leftPort, rightPort, wDiameter,axle, pos = vec2(0,0)):
         self.hub = hub()
         self.lM = motor(leftPort)

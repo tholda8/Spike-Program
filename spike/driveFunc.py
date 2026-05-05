@@ -7,7 +7,7 @@ from pybricks.tools import wait
 #todo circle to pos background
 
 class driveManager:
-    def __init__(self, robot:robot):
+    def __init__(self, robot:Robot):
         self.robot = robot
         self.setDefaultMode()
         #curves
@@ -30,8 +30,8 @@ class driveManager:
         #rotate
         self.tolDiff = pi/90
         self.accuracy = 0.01
-        self.racc = 500
-        self.rdeacc = 500
+        self.racc = 200
+        self.rdeacc = 200
         self.braker = True
     
     def setFastMode(self):

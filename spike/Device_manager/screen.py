@@ -1,4 +1,4 @@
-from spike.Device_manager.robot import*
+from Device_manager.robot import*
 
 class Screen:
     def __init__(self, hub: hub, menuRow = 4):

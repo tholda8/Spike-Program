@@ -1,10 +1,11 @@
 
 from imgs import *
-from spike.Device_manager.screen import *
+from Device_manager.screen import *
 from vyzva import *
-
+from wro2026 import *
 
 menu = Screen(drive.robot.hub)
+menu.addPage(Page(wro, icon=vyzvai, image=arrow, delta=110))
 menu.addPage(Page(vyzva, icon=vyzvai, image=arrow, delta=110))
 menu.addPage(Page(msprint, icon=rovni, image=arrow, delta=110))
 menu.addPage(Page(mslalom, icon=slalomi, image=arrow, delta=110))
