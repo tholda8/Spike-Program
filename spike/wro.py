@@ -19,10 +19,18 @@ class handleCube:
         self.liftMotor.run_target(1000, -145)
 
     def down(self):
-        self.liftMotor.run_target(1000, 123)
-    
+        timer = StopWatch()
+        timer.reset()
+        self.liftMotor.run_target(1000, 123, wait=False)
+        while not self.liftMotor.done():
+            if timer.time() > 1000 or self.drive.robot.hub.m_hub.imu.tilt()[1]>10:
+                self.liftMotor.stop()
+                return False
+        return True
+
     def midle(self):
         self.liftMotor.run_target(1000, 0)
+
     def midleDown(self):
         self.liftMotor.run_target(1000, -40)
 
@@ -34,25 +42,21 @@ class handleCube:
 
     def release(self):
         self.grabMotor.run_target(1000, 0)
-
-    def pickUp(self):
-        self.release()
-        self.down()
-        wait(200)
-        self.grab()
-        wait(200)
-        self.up()
         
-    def pickUp2(self):
-        self.midleDown()
-        wait(100)
-        self.release()
-        self.down()
-        wait(100)
-        self.grab()
-        wait(100)
-        self.up()        
-
+    def pickUp(self):
+        picked = False
+        attempts = 0
+        while not picked:
+            attempts += 1
+            self.midleDown()
+            self.release()
+            picked = self.down()
+            self.grab()
+            wait(200)
+            self.up()
+            if attempts > 3:
+                self.drive.rotate(self.drive.robot.hub.angle()+3, speed = 500)
+                self.drive.rotate(self.drive.robot.hub.angle()-3, speed = 500)
 
     def drop(self):
         self.midle()
@@ -70,13 +74,33 @@ class handleCube:
             self.drop()
             self.drive.straight(-5)
 
+class betonovator:
+    def __init__(self, drive: driveManager, motor: Port, excentricity):
+        """excentricity: center in center of rotation; x in direction of motion; y perpendicular to x positive to the left, measured in read/write position"""
+        self.drive = drive
+        self.motor = Motor(motor)
+        self.excentricity = excentricity
+    
+    def aling(self): #not used
+        self.motor.run_target(1000, 0)
 
+    def up(self):
+        self.motor.run_target(1000, 55)
+
+    def down(self):
+        self.motor.run_target(500, -30)
+
+    def pickUp(self, pos: vec2):
+        self.drive.toPos(pos+self.excentricity, backwards=True)
+        self.drive.rotate(180)
+        self.down()
 
 def WRO():
     
     drive.robot.pos = vec2(19,11.5)
     drive.robot.hub.addOffset(-90)
     h = handleCube(drive, Port.F, Port.C, vec2(0,0))
+    beton = betonovator(drive, Port.B, vec2(-12,0))
     a = 7.3
     b = 8.3
     h.up()
@@ -84,25 +108,26 @@ def WRO():
     h.pickUp()
     drive.toPos(vec2(19,29+a))
     #h.drop()
-    h.pickUp2()
+    h.pickUp()
     drive.toPos(vec2(19,29+b+a))
     #h.drop()
-    h.pickUp2()
+    h.pickUp()
     drive.toPos(vec2(19,29+b+2*a))
-    h.pickUp2()
+    h.pickUp()
     
     drive.toPos(vec2(51,70))
-    drive.toPos(vec2(91,70),backwards=True)
-    
-    a = 5
-    drive.toPos(vec2(123,70),backwards=True)
+    drive.rotate(180, speed = 500)
+    drive.toPos(vec2(90,70),backwards=True, speed = 200)
+    drive.toPos(vec2(125, 70),backwards=True, speed = 500)
     h.drop()
-    drive.toPos(vec2(123+a,70),backwards=True)
-    h.drop()
-    drive.toPos(vec2(123+2*a,70),backwards=True)
-    h.drop()
-    drive.toPos(vec2(123+3*a,70),backwards=True)
-    h.drop()
+    drive.toPos(vec2(150,70),backwards=True, speed = 200)
+    drive.toPos(vec2(170,70),backwards=True)
+
+    #white
+    beton.pickUp(vec2(228, 20))
+    drive.straight(10)
+    drive.toPos(vec2(150,70), backwards=True)
+    beton.up()
     return
     
     drive.toPos(vec2(173,70))
