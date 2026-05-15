@@ -3,8 +3,6 @@ from pybricks.tools import wait
 from tester import *
 
 
-
-
 class handleCube:
     def __init__(self, drive: driveManager, liftMotor: Port, grabMotor: Port, excentricity: vec2):
         """
@@ -95,39 +93,95 @@ class betonovator:
         self.drive.rotate(180)
         self.down()
 
+def toPosAntifail(pos: vec2, backwards = False, speed = 500):
+    drive.toPos(pos, backwards, speed, background = True)
+    while drive.isTasksRunning():
+        if drive.robot.hub.m_hub.imu.tilt()[0]>5:
+            #fatal failure
+            drive.stopTasks()
+            drive.robot.stop()
+            
+
 def WRO():
-    
+    #inicialization
     drive.robot.pos = vec2(19,11.5)
     drive.robot.hub.addOffset(-90)
     h = handleCube(drive, Port.F, Port.C, vec2(0,0))
     beton = betonovator(drive, Port.B, vec2(-12,0))
+    h.up()
+    beton.up()
+
+    #cube loading
     a = 7.3
     b = 8.3
-    h.up()
     drive.toPos(vec2(19,29))
     h.pickUp()
     drive.toPos(vec2(19,29+a))
-    #h.drop()
     h.pickUp()
     drive.toPos(vec2(19,29+b+a))
-    #h.drop()
     h.pickUp()
     drive.toPos(vec2(19,29+b+2*a))
     h.pickUp()
     
+    #transport
     drive.toPos(vec2(51,70))
     drive.rotate(180, speed = 500)
     drive.toPos(vec2(90,70),backwards=True, speed = 200)
-    drive.toPos(vec2(125, 70),backwards=True, speed = 500)
+
+    #carpet bombing (unloading cubes)
+    #drive.toPos(vec2(125, 70),backwards=True, speed = 500)
+    toPosAntifail(vec2(125, 70), backwards=True, speed = 500)
     h.drop()
-    drive.toPos(vec2(150,70),backwards=True, speed = 200)
+    toPosAntifail(vec2(150,70),backwards=True, speed = 200)
     drive.toPos(vec2(170,70),backwards=True)
 
-    #white
+    #white (in progress...)
     beton.pickUp(vec2(228, 20))
     drive.straight(10)
-    drive.toPos(vec2(150,70), backwards=True)
+    drive.toPos(vec2(150,70), backwards=True) #I hate the need to turn (but it is there)
     beton.up()
+    # zášup je potřeba vyladit
+    drive.straight(10)
+    beton.down()
+    drive.straight(-10, backwards=True)
+    beton.up()
+    drive.straight(30)
+
+    #green
+    beton.pickUp(vec2(228, 72))
+    drive.straight(10)
+    drive.toPos(vec2(150,72), backwards=True)
+    drive.rotate(0)
+    beton.up()
+    drive.straight(30)
+
+    #yellow
+    beton.pickUp(vec2(228, 94))
+    drive.straight(10)
+    drive.toPos(vec2(170,25), backwards=True)
+    drive.toPos(vec2(118,25), backwards=True)
+    drive.rotate(-90)
+    drive.straight(-30, backwards=True)
+    beton.up()
+
+    #miska and hladítko
+    drive.toPos(vec2(130, 20))
+    drive.rotate(30)
+    drive.straight(-10, backwards=True)
+    beton.down() #miska in
+    drive.toPos(vec2(800, 15), backwards=True) #hladítko šoup
+    drive.toPos(vec2(170, 40))
+    beton.up() #miska out
+
+    #blue and lžička
+    beton.pickUp(vec2(228, 46))
+    drive.straight(10)
+    drive.toPos(vec2(160, 15))
+    drive.toPos(vec2(30, 20)) #lžička šoup (možno přidat ninja moves)
+    drive.straight(-5, backwards=True)
+    drive.toPos(vec2(70, 72), backwards=True)
+    beton.up()
+
     return
     
     drive.toPos(vec2(173,70))
