@@ -1,3 +1,5 @@
+
+
 from setup import *                                                                                                                                                                                                                                                                                
 from pybricks.tools import wait
 from tester import *
@@ -12,13 +14,31 @@ def bearsetup():
     global gotbear
     gotbear = False
 
+def close(background = False):
+        angle = 20
+        if background:
+            drive.turnMotor(0,-angle, background=True, simple = True, time = 400)
+            drive.turnMotor(1,angle, background=background, simple = True, time = 400)
+        else:
+            drive.turnMotor(0,-angle, background=True, simple = True)
+            drive.turnMotor(1,angle, background=True, simple = True)
+            while drive.isTasksRunning():
+                drive.runTasks()
+            drive.stopTasks()
+            drive.robot.devices[0].hold()
+            drive.robot.devices[1].hold()
+
+def open(background = False, time = 0):
+        drive.turnMotor(0,0, background=True, simple = True, time = time)
+        drive.turnMotor(1,0, background=background, simple = True, time = time)
+
 def hunter(value=30):
     global gotbear
     if drive.robot.devices[3].distance() > value:
         print("hunt", drive.robot.devices[3].distance())
         drive.stopTasks()
         drive.robot.stop()
-        drive.close()
+        close()
         gotbear = True
         return True
     return False
@@ -59,14 +79,14 @@ def hunt():
             drive.robot.stop()
             return
         drive.runTasks()
-    drive.close()
+    close()
 
 def start():
     drive.circleToPos(vec2(17,75), connect=[False,True])
     drive.circleToPos(vec2(60,75), connect=[True,True])
     drive.circleToPos(vec2(60,65), connect=[True,True])
     drive.circleToPos(vec2(110,65), connect=[True,True])
-    drive.open(background=True, time = 400)
+    open(background=True, time = 400)
     drive.circleToPos(vec2(115,100), connect=[True,True])
     drive.circleToPos(vec2(115,155), connect=[True,False], accuracy=1.5)
     drive.stopTasks()
@@ -83,18 +103,23 @@ def finish():
 
     drive.rotate(90)
 def bear_rescue():
-    drive.robot.devices.append(Ultrasonic(Port.C))
+    drive.robot.addDevice(motor(Port.F))
+    drive.robot.addDevice(motor(Port.E))
+    drive.robot.addDevice(Ultrasonic(Port.B))
+    drive.robot.addDevice(Ultrasonic(Port.D))
     
-    drive.robot.pos = vec2(17,11.3)
     drive.robot.hub.resetAngle()
-    drive.robot.hub.addOffset(-90)
     
     drive.setDefaultMode()
     drive.setMotorsToDef()
     
     bearsetup()
+    close()
+    drive.robot.hub.addOffset(-180)
     
-    drive.close()
+    drive.robot.pos = vec2(17,11.3)
+
+    close()
     
     drive.robot.hub.colorAnimate([Color.MAGENTA, Color.NONE,Color.WHITE, Color.NONE], 100)
     while not drive.robot.hub.isButtonPressed(Button.CENTER):
@@ -102,12 +127,12 @@ def bear_rescue():
     drive.robot.hub.color(Color.MAGENTA)
     start()
     while not bear():
-        drive.open()
-        drive.gotbear = False
+        open()
+        gotbear = False
         sken(distance = 249, value = 175, sample=12)
         drive.stopTasks()
         drive.robot.stop()
-        hunt(distance = 105)
+        hunt()
         drive.stopTasks()
         drive.robot.stop()
         if drive.robot.pos.y > 249:

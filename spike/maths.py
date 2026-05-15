@@ -108,7 +108,7 @@ class vec2:
         """Normalize the vector to have a length of 1."""
         length = self.length()
         if length == 0:
-            raise print("Cannot normalize a zero-length vector.")
+            print("Cannot normalize a zero-length vector.")
         return vec2(self.x / length, self.y / length)
     def xAngle(self):
         """Calculate the angle of the vector in radians."""
@@ -119,12 +119,13 @@ class mat2:
 
         self.m = [[a, b], [c, d]]
 
+    @staticmethod
     def rotation(angle: float):
         c = cos(angle)
         s = sin(angle)
         return mat2(c, -s, s, c)
     
-    def identity():
+    def identity(self):
         return mat2(1, 0, 0, 1)
     
     def __repr__(self):
