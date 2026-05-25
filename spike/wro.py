@@ -1,3 +1,4 @@
+from math import *
 from setup import *                                                                                                                                                                                                                                                                                
 from pybricks.tools import wait
 from tester import *
@@ -41,9 +42,10 @@ class handleCube:
     def release(self):
         self.grabMotor.run_target(1000, 0)
         
-    def pickUp(self):
+    def pickUp(self, correction = 3):
         picked = False
         attempts = 0
+        initialAngle = self.drive.robot.hub.angle()
         while not picked:
             attempts += 1
             self.midleDown()
@@ -53,8 +55,7 @@ class handleCube:
             wait(200)
             self.up()
             if attempts > 3:
-                self.drive.rotate(self.drive.robot.hub.angle()+3, speed = 500)
-                self.drive.rotate(self.drive.robot.hub.angle()-3, speed = 500)
+                self.drive.rotate(initialAngle + correction * sign(attempts%2-1), speed = 500)
 
     def drop(self):
         self.midle()
@@ -93,14 +94,75 @@ class betonovator:
         self.drive.rotate(180)
         self.down()
 
-def toPosAntifail(pos: vec2, backwards = False, speed = 500):
-    drive.toPos(pos, backwards, speed, background = True)
+def straightAntifail(distance, backwards = False, speed = 500, tolerance = 5):
+    drive.straight(distance, backwards, speed, background = True)
     while drive.isTasksRunning():
-        if drive.robot.hub.m_hub.imu.tilt()[0]>5:
+        drive.runTasks()
+        if abs(drive.robot.hub.m_hub.imu.tilt()[0]) > tolerance:
             #fatal failure
             drive.stopTasks()
             drive.robot.stop()
-            
+            return False
+    return True
+
+def gridFit(distance = -10, backwards = True, speed = 500, gyroTrust = True, correction = -5):
+    initAngle = drive.robot.hub.angle()
+    initialPos = drive.robot.pos
+    while not straightAntifail(distance, backwards, speed):
+        distanceTraveled = clamp((drive.robot.pos - initialPos).length(), abs(distance)/2, abs(distance)) * sign(distance)
+        side = sign(drive.robot.hub.m_hub.imu.tilt()[0])
+        if gyroTrust:
+            drive.rotate(initAngle, speed = 500)
+        drive.straight(-distanceTraveled, not backwards, speed)
+        drive.rotate(drive.robot.hub.angle() + correction * side, speed = 500)
+
+class Line:
+    def __init__(self, a: vec2, b: vec2):
+        self.a = a
+        self.b = b
+        self.direction = (b - a).normalize()
+        self.normal = vec2(-self.direction.y, self.direction.x)
+        self.parC = - self.normal.x * self.a.x - self.normal.y * self.a.y
+        self.orientation = self.direction.xAngle()
+
+    def move(self, shift: vec2):
+        self.a += shift
+        self.b += shift
+
+    def translated(self, shift: vec2):
+        """new line parallel to the original and shifted by given vector"""
+        return Line(self.a + shift, self.b + shift)
+    
+    def fPoint(self, point: vec2):
+        """from point to line vector"""
+        return (vec2((self.a - point).length() * cos((self.a - point).xAngle() - self.orientation - pi/2, 0)), 0).rotate(self.orientation + pi/2)
+    
+def alignWall(wall: Line, contact: vec2, speed = 500, time = 1000, general = False):
+    """contact is a vector from center of rotation to the side of contact, positive x is in default direction of motion"""
+    timer = StopWatch()
+    timer.reset()
+    while timer.time() < time:
+        drive.robot.setSpeed(speed, speed)
+        drive.robot.update()
+    drive.robot.stop()
+    drive.robot.update()
+    if general:
+        drive.robot.pos += wall.fPoint(drive.robot.pos + contact.rotate(drive.robot.hub.angle()))
+    else:
+        if round(wall.orientation) == 0:
+            drive.robot.pos.y = wall.a.y - contact.x
+        elif round(wall.orientation) == pi/2:
+            drive.robot.pos.x = wall.a.x - contact.x
+        else:
+            drive.robot.hub.m_hub.speaker.beep()
+            print("incorrect wall orientation: ", wall.orientation)
+
+wallX = Line(vec2(0,0), vec2(0,236.2))
+wallY = Line(vec2(0,0), vec2(114.3,0))
+wallXX = Line(vec2(114.3,0), vec2(114.3,236.2)) #opposite to wallX
+wallYY = Line(vec2(0,236.2), vec2(114.3,236.2)) #opposite to wallY
+rFront = vec2(12, 0) #random
+rBack = vec2(-12, 0) #random   
 
 def WRO():
     #inicialization
