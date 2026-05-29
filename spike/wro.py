@@ -158,14 +158,27 @@ def gridFit(distance = -15, backwards = True, speed = 200, gyroTrust = True, cor
             
 
 def WRO():
+    """
+    #start system
+    drive.robot.hub.m_hub.system.set_stop_button(Button.CENTER)
+    while not drive.robot.hub.isButtonPressed(Button.BLUETOOTH):
+        wait(10)
+    drive.robot.hub.beep(500, 100)
+    while drive.robot.hub.isButtonPressed(Button.BLUETOOTH):
+        wait(10)
+    drive.robot.hub.m_hub.system.set_stop_button(Button.BLUETOOTH)
+    """
+
     #inicialization
     drive.robot.pos = vec2(18.5,11.5)
+    drive.robot.hub.resetAngle()
     drive.robot.hub.addOffset(-90)
     print(drive.robot.hub.angle(), " | ", drive.robot.pos)
     h = handleCube(drive, Port.F, Port.C, vec2(0,0))
     beton = betonovator(drive, Port.B, vec2(-12,0))
     h.up()
     beton.up()
+
     #cube loading
     a = 7.2
     b = 9.2
@@ -282,7 +295,7 @@ def WRO():
     drive.toPos(vec2(122,25),backwards=True)
     
     
-    
+    #miska
     drive.rotate(90)
     drive.straight(-2, backwards=True)
     beton.down()
@@ -297,7 +310,8 @@ def WRO():
     #beton.pickUp(vec2(227, 51))
     #drive.straight(10)
     #drive.rotate(90)
-    
+
+    #nástroje
     #drive.toPos(vec2(200, 21))
     drive.toPos(vec2(196, 18),backwards=True)
     drive.toPos(vec2(161, 13.3),backwards=True)
@@ -351,4 +365,24 @@ def WRO():
     drive.toPos(vec2(236-28,20))
     drive.rotate(180)
     
-    
+def WROday():
+    """
+    #start system
+    drive.robot.hub.m_hub.system.set_stop_button(Button.CENTER)
+    while not drive.robot.hub.isButtonPressed(Button.BLUETOOTH):
+        wait(10)
+    drive.robot.hub.beep(500, 100)
+    while drive.robot.hub.isButtonPressed(Button.BLUETOOTH):
+        wait(10)
+    drive.robot.hub.m_hub.system.set_stop_button(Button.BLUETOOTH)
+    """
+
+    #inicialization
+    drive.robot.pos = vec2(18.5,11.5)
+    drive.robot.hub.resetAngle()
+    drive.robot.hub.addOffset(-90)
+    print(drive.robot.hub.angle(), " | ", drive.robot.pos)
+    h = handleCube(drive, Port.F, Port.C, vec2(0,0))
+    beton = betonovator(drive, Port.B, vec2(-12,0))
+    h.up()
+    beton.up()

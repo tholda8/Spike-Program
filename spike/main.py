@@ -8,6 +8,7 @@ from wro import *
 
 menu = Screen(drive.robot.hub)
 menu.addPage(Page(WRO, icon=wroimg, image=arrow, delta=110))
+menu.addPage(Page(WROday, icon=wroimg2, image=arrow, delta=110))
 menu.addPage(Page(bear_rescue, icon=smile, image=arrow, delta=110))
 menu.addPage(Page(test0, icon=test, image=arrow, delta=110))
 menu.addPage(Page(vyzva, icon=vyzvai, image=arrow, delta=110))
