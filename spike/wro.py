@@ -1,6 +1,9 @@
 from setup import *                                                                                                                                                                                                                                                                                
 from pybricks.tools import wait
 from tester import *
+from imgs import wroimg, wroimg2
+from maths import pi, mat2
+from umath import radians, cos, pi, degrees
 
 
 class handleCube:
@@ -107,6 +110,50 @@ class betonovator:
         self.drive.straight(-4, backwards=True)
         self.flakanec()
 
+class Line:
+    def __init__(self, a: vec2, b: vec2):
+        self.a = a
+        self.b = b
+        self.direction = (b - a).normalize()
+        self.normal = vec2(-self.direction.y, self.direction.x)
+        self.parC = - self.normal.x * self.a.x - self.normal.y * self.a.y
+        self.orientation = self.direction.xAngle()
+
+    def move(self, shift: vec2):
+        self.a += shift
+        self.b += shift
+
+    def translated(self, shift: vec2):
+        """new line parallel to the original and shifted by given vector"""
+        return Line(self.a + shift, self.b + shift)
+    
+def alignWall(wall: Line, contact: vec2, speed = 500, time = 1000, gyroCorrection = True):
+    """contact is a vector from center of rotation to the side of contact, positive x is in default direction of motion"""
+    timer = StopWatch()
+    timer.reset()
+    while timer.time() < time:
+        drive.robot.setSpeed(speed, speed)
+        #drive.robot.update()
+    drive.robot.stop()
+    #drive.robot.update()
+    if round(wall.orientation) == 0:
+        drive.robot.pos.y = wall.a.y - contact.x
+    elif abs(wall.orientation - pi/2) < 0.1:
+        drive.robot.pos.x = wall.a.x - contact.x
+    else:
+        drive.robot.hub.m_hub.speaker.beep()
+        print("incorrect wall orientation: ", wall.orientation)
+    if gyroCorrection:
+        drive.robot.hub.resetAngle()
+        drive.robot.hub.addOffset(degrees(wall.orientation) + 90*sign(contact.x))
+
+wallX = Line(vec2(0,0), vec2(236.2, 0))
+wallY = Line(vec2(0,0), vec2(0, 114.3))
+wallXX = Line(vec2(0, 114.3), vec2(236.2, 114.3)) #opposite to wallX
+wallYY = Line(vec2(236.2, 0), vec2(236.2, 114.3)) #opposite to wallY
+rBack = vec2(-5.3, 0)   
+rInsideBack = vec2(-4.2, 0)
+
 def straightAntifail(distance, backwards = False, speed = 500, tolerance = 2):
     initialAngle = drive.robot.hub.angle()
     drive.straight(distance, speed, backwards, background = True)
@@ -161,6 +208,7 @@ def WRO():
     """
     #start system
     drive.robot.hub.m_hub.system.set_stop_button(Button.CENTER)
+    drive.robot.hub.image(wroimg)
     while not drive.robot.hub.isButtonPressed(Button.BLUETOOTH):
         wait(10)
     drive.robot.hub.beep(500, 100)
@@ -323,52 +371,12 @@ def WRO():
     drive.toPos(vec2(30, 24),backwards=True)
     drive.rotate(50)
     return
-    drive.toPos(vec2(105, 15))
-    drive.toPos(vec2(61, 34),backwards=True)
-    drive.toPos(vec2(61, 70),backwards=True)
-    drive.toPos(vec2(88, 70),backwards=True)
-    beton.up()
-    
-    
-    drive.toPos(vec2(70, 70))
-    drive.toPos(vec2(70, 19), backwards=True)
-    drive.rotate(135)
-    beton.down()
-    drive.rotate(180)
-    drive.toPos(vec2(30, 19))
-    drive.straight(-10)
-    drive.toPos(vec2(22, 19))
-    
-    return
-    #miska and hladítko
-    drive.toPos(vec2(130, 20))
-    drive.rotate(30)
-    drive.straight(-10, backwards=True)
-    beton.down() #miska in
-    drive.toPos(vec2(800, 15), backwards=True) #hladítko šoup
-    drive.toPos(vec2(170, 40))
-    beton.up() #miska out
-
-    #blue and lžička
-    beton.pickUp(vec2(228, 46))
-    drive.straight(10)
-    drive.toPos(vec2(160, 15))
-    drive.toPos(vec2(30, 20)) #lžička šoup (možno přidat ninja moves)
-    drive.straight(-5, backwards=True)
-    drive.toPos(vec2(70, 72), backwards=True)
-    beton.up()
-
-    return
-    
-    drive.toPos(vec2(173,70))
-    drive.toPos(vec2(173,70))
-    drive.toPos(vec2(236-28,20))
-    drive.rotate(180)
     
 def WROday():
     """
     #start system
     drive.robot.hub.m_hub.system.set_stop_button(Button.CENTER)
+    drive.robot.hub.image(wroimg2)
     while not drive.robot.hub.isButtonPressed(Button.BLUETOOTH):
         wait(10)
     drive.robot.hub.beep(500, 100)
@@ -376,7 +384,6 @@ def WROday():
         wait(10)
     drive.robot.hub.m_hub.system.set_stop_button(Button.BLUETOOTH)
     """
-
     #inicialization
     drive.robot.pos = vec2(18.5,11.5)
     drive.robot.hub.resetAngle()
