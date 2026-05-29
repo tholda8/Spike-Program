@@ -1,4 +1,3 @@
-from math import *
 from setup import *                                                                                                                                                                                                                                                                                
 from pybricks.tools import wait
 from tester import *
@@ -15,14 +14,20 @@ class handleCube:
         self.excentricity = excentricity
 
     def up(self):
-        self.liftMotor.run_target(1000, -145)
+        timer = StopWatch()
+        timer.reset()
+        self.liftMotor.run_target(1000, -155, wait=False)
+        while not self.liftMotor.done():
+            if timer.time() > 1500:
+                break
+            wait(10)
 
     def down(self):
         timer = StopWatch()
         timer.reset()
-        self.liftMotor.run_target(1000, 123, wait=False)
+        self.liftMotor.run_target(1000, 120, wait=False)
         while not self.liftMotor.done():
-            if timer.time() > 1000 or self.drive.robot.hub.m_hub.imu.tilt()[1]>10:
+            if timer.time() > 1300 or self.drive.robot.hub.m_hub.imu.tilt()[1]>10:
                 self.liftMotor.stop()
                 return False
         return True
@@ -31,8 +36,9 @@ class handleCube:
         self.liftMotor.run_target(1000, 0)
 
     def midleDown(self):
-        self.liftMotor.run_target(1000, -40)
-
+        self.liftMotor.run_target(1000, -80)#######
+    def semidown(self):
+        self.liftMotor.run_target(1000, -40)#######
     def dropPos(self):
         self.liftMotor.run_target(1000, 120)
 
@@ -42,7 +48,7 @@ class handleCube:
     def release(self):
         self.grabMotor.run_target(1000, 0)
         
-    def pickUp(self, correction = 3):
+    def pickUp(self,correction = 3):
         picked = False
         attempts = 0
         initialAngle = self.drive.robot.hub.angle()
@@ -53,12 +59,14 @@ class handleCube:
             picked = self.down()
             self.grab()
             wait(200)
+            
             self.up()
             if attempts > 3:
-                self.drive.rotate(initialAngle + correction * sign(attempts%2-1), speed = 500)
+                self.drive.rotate(initialAngle + correction * sign(attempts%2-0.5), speed = 500) 
+
 
     def drop(self):
-        self.midle()
+        self.midleDown()
         self.release()
         self.up()
 
@@ -88,16 +96,23 @@ class betonovator:
 
     def down(self):
         self.motor.run_target(500, -30)
+        
+    def flakanec(self):
+        self.motor.run_target(1000, -35, wait=False)
 
     def pickUp(self, pos: vec2):
-        self.drive.toPos(pos+self.excentricity, backwards=True)
+        self.drive.toPos(pos+self.excentricity - vec2(3, 0), backwards=True)
         self.drive.rotate(180)
         self.down()
+        self.drive.straight(-4, backwards=True)
+        self.flakanec()
 
-def straightAntifail(distance, backwards = False, speed = 500, tolerance = 5):
-    drive.straight(distance, backwards, speed, background = True)
+def straightAntifail(distance, backwards = False, speed = 500, tolerance = 2):
+    initialAngle = drive.robot.hub.angle()
+    drive.straight(distance, speed, backwards, background = True)
     while drive.isTasksRunning():
         drive.runTasks()
+        #print(drive.robot.hub.m_hub.imu.tilt()[0])
         if abs(drive.robot.hub.m_hub.imu.tilt()[0]) > tolerance:
             #fatal failure
             drive.stopTasks()
@@ -105,127 +120,212 @@ def straightAntifail(distance, backwards = False, speed = 500, tolerance = 5):
             return False
     return True
 
-def gridFit(distance = -10, backwards = True, speed = 500, gyroTrust = True, correction = -5):
+def straightAntifail2(distance, backwards = False, speed = 500, tolerance = 2, gyrotolerance = 5):
+    initialAngle = drive.robot.hub.angle()
+    initialPos = drive.robot.pos
+    if backwards:
+        speed = -speed
+    drive.robot.setSpeed(speed, speed)
+    while (drive.robot.pos - initialPos).length() < abs(distance):
+        drive.robot.update()
+        if abs(drive.robot.hub.angle() - initialAngle) > gyrotolerance:
+            drive.robot.stop()
+            print(drive.robot.hub.angle() - initialAngle, "kola")
+            return [False, sign(drive.robot.hub.angle() - initialAngle)]
+        #print(drive.robot.hub.m_hub.imu.tilt()[0])
+        if abs(drive.robot.hub.m_hub.imu.tilt()[0]) > tolerance:
+            #fatal failure
+            drive.robot.stop()
+            print(drive.robot.hub.m_hub.imu.tilt()[0])
+            return [False, sign(drive.robot.hub.m_hub.imu.tilt()[0])]
+    drive.robot.stop()
+    return [True, 0]
+
+def gridFit(distance = -15, backwards = True, speed = 200, gyroTrust = True, correction = -5):
     initAngle = drive.robot.hub.angle()
     initialPos = drive.robot.pos
-    while not straightAntifail(distance, backwards, speed):
+    antidata = [False, 0]
+    while not antidata[0]:
+        antidata = straightAntifail2(distance, backwards, speed)
+        print(antidata)
         distanceTraveled = clamp((drive.robot.pos - initialPos).length(), abs(distance)/2, abs(distance)) * sign(distance)
-        side = sign(drive.robot.hub.m_hub.imu.tilt()[0])
+        side = antidata[1]
         if gyroTrust:
             drive.rotate(initAngle, speed = 500)
-        drive.straight(-distanceTraveled, not backwards, speed)
-        drive.rotate(drive.robot.hub.angle() + correction * side, speed = 500)
-
-class Line:
-    def __init__(self, a: vec2, b: vec2):
-        self.a = a
-        self.b = b
-        self.direction = (b - a).normalize()
-        self.normal = vec2(-self.direction.y, self.direction.x)
-        self.parC = - self.normal.x * self.a.x - self.normal.y * self.a.y
-        self.orientation = self.direction.xAngle()
-
-    def move(self, shift: vec2):
-        self.a += shift
-        self.b += shift
-
-    def translated(self, shift: vec2):
-        """new line parallel to the original and shifted by given vector"""
-        return Line(self.a + shift, self.b + shift)
-    
-    def fPoint(self, point: vec2):
-        """from point to line vector"""
-        return (vec2((self.a - point).length() * cos((self.a - point).xAngle() - self.orientation - pi/2, 0)), 0).rotate(self.orientation + pi/2)
-    
-def alignWall(wall: Line, contact: vec2, speed = 500, time = 1000, general = False):
-    """contact is a vector from center of rotation to the side of contact, positive x is in default direction of motion"""
-    timer = StopWatch()
-    timer.reset()
-    while timer.time() < time:
-        drive.robot.setSpeed(speed, speed)
-        drive.robot.update()
-    drive.robot.stop()
-    drive.robot.update()
-    if general:
-        drive.robot.pos += wall.fPoint(drive.robot.pos + contact.rotate(drive.robot.hub.angle()))
-    else:
-        if round(wall.orientation) == 0:
-            drive.robot.pos.y = wall.a.y - contact.x
-        elif round(wall.orientation) == pi/2:
-            drive.robot.pos.x = wall.a.x - contact.x
-        else:
-            drive.robot.hub.m_hub.speaker.beep()
-            print("incorrect wall orientation: ", wall.orientation)
-
-wallX = Line(vec2(0,0), vec2(0,236.2))
-wallY = Line(vec2(0,0), vec2(114.3,0))
-wallXX = Line(vec2(114.3,0), vec2(114.3,236.2)) #opposite to wallX
-wallYY = Line(vec2(0,236.2), vec2(114.3,236.2)) #opposite to wallY
-rFront = vec2(12, 0) #random
-rBack = vec2(-12, 0) #random   
+        if not antidata[0]:
+            drive.straight(-distanceTraveled, speed, not backwards)
+            drive.rotate(drive.robot.hub.angle() + correction * side, speed = 500)
+            
 
 def WRO():
     #inicialization
-    drive.robot.pos = vec2(19,11.5)
+    drive.robot.pos = vec2(18.5,11.5)
     drive.robot.hub.addOffset(-90)
+    print(drive.robot.hub.angle(), " | ", drive.robot.pos)
     h = handleCube(drive, Port.F, Port.C, vec2(0,0))
     beton = betonovator(drive, Port.B, vec2(-12,0))
     h.up()
     beton.up()
-
     #cube loading
-    a = 7.3
-    b = 8.3
-    drive.toPos(vec2(19,29))
+    a = 7.2
+    b = 9.2
+    drive.toPos(vec2(19,29.3))
+    drive.setPreciseMode()
+    #drive.rotate(90)
+    #drive.setDefaultMode()
     h.pickUp()
-    drive.toPos(vec2(19,29+a))
+    drive.toPos(vec2(19,29.3+a))
+    #drive.setPreciseMode()
+    #drive.rotate(90)
+    #drive.setDefaultMode()
     h.pickUp()
-    drive.toPos(vec2(19,29+b+a))
+    drive.toPos(vec2(19,29.3+b+a))
+    #drive.setPreciseMode()
+    #drive.rotate(90)
+    #drive.setDefaultMode()
     h.pickUp()
-    drive.toPos(vec2(19,29+b+2*a))
+    drive.toPos(vec2(19,29.3+b+2*a))
+    #drive.setPreciseMode()
+    #drive.rotate(90)
+    drive.setDefaultMode()
     h.pickUp()
     
     #transport
+    drive.setPreciseMode()
     drive.toPos(vec2(51,70))
-    drive.rotate(180, speed = 500)
-    drive.toPos(vec2(90,70),backwards=True, speed = 200)
-
+    drive.setDefaultMode()
+    """
+    drive.rotate(-90)
+    drive.robot.lM.setSpeed(-300)
+    drive.robot.rM.setSpeed(-300)
+    for i in range(1700):
+        drive.robot.update()
+    drive.robot.lM.brake()
+    drive.robot.rM.brake()
+    rpos = drive.robot.pos
+    drive.robot.pos = vec2(rpos.x, 110)
+    drive.toPos(vec2(51,70),speed = 300)
+    """
+    drive.rotate(180, speed = 300)
+    drive.toPos(vec2(100,69.6),backwards=True, speed = 300)
+    gridFit()
     #carpet bombing (unloading cubes)
+    c = vec2(5.48, 0)
+    pos = vec2(124, 69.6)
     #drive.toPos(vec2(125, 70),backwards=True, speed = 500)
-    toPosAntifail(vec2(125, 70), backwards=True, speed = 500)
+    drive.setPreciseMode()
+    drive.toPos(pos, backwards=True, speed = 500)
+    drive.setDefaultMode()
     h.drop()
-    toPosAntifail(vec2(150,70),backwards=True, speed = 200)
-    drive.toPos(vec2(170,70),backwards=True)
+    wait(250)
+    h.semidown()
+    h.grab()
+    h.up()
+    drive.toPos(pos+c, backwards=True, speed = 500)
+    h.drop()
+    wait(250)
+    h.semidown()
+    h.grab()
+    h.up()
+    drive.toPos(pos+2*c, backwards=True, speed = 500)
+    h.drop()
+    wait(250)
+    h.semidown()
+    h.grab()
+    h.up()
+    drive.toPos(pos+3*c, backwards=True, speed = 500)
+    h.drop()
+    wait(250)
+    h.semidown()
+    h.grab()
+    h.up()
+    
+    
+    #drive.toPos(vec2(150,70),backwards=True, speed = 100)
+    drive.toPos(vec2(170,69.6),backwards=True)
+    drive.setDefaultMode()
 
     #white (in progress...)
+    """
     beton.pickUp(vec2(228, 20))
-    drive.straight(10)
-    drive.toPos(vec2(150,70), backwards=True) #I hate the need to turn (but it is there)
+    drive.straight(20)
+    
+    drive.toPos(vec2(186,44), backwards=True) 
+    drive.toPos(vec2(147,74), backwards=True) #I hate the need to turn (but it is there)
     beton.up()
     # zášup je potřeba vyladit
-    drive.straight(10)
+    drive.straight(15)
     beton.down()
-    drive.straight(-10, backwards=True)
+    drive.straight(-13,backwards=True)
     beton.up()
-    drive.straight(30)
+    drive.straight(5)
+    """
 
     #green
-    beton.pickUp(vec2(228, 72))
+    beton.pickUp(vec2(227, 74))
     drive.straight(10)
-    drive.toPos(vec2(150,72), backwards=True)
+    
+    drive.toPos(vec2(150.2,70), backwards=True)
     drive.rotate(0)
     beton.up()
-    drive.straight(30)
+    drive.straight(15)
 
     #yellow
-    beton.pickUp(vec2(228, 94))
+    beton.pickUp(vec2(224, 98))
     drive.straight(10)
-    drive.toPos(vec2(170,25), backwards=True)
-    drive.toPos(vec2(118,25), backwards=True)
-    drive.rotate(-90)
-    drive.straight(-30, backwards=True)
+    drive.toPos(vec2(176,25), backwards=True)
+    drive.toPos(vec2(122,25), backwards=True)
+    drive.rotate(-90,speed = 200)
+    drive.toPos(vec2(122,41.5), backwards=True)
     beton.up()
-
+    drive.straight(5)
+    drive.toPos(vec2(122,25),backwards=True)
+    
+    
+    
+    drive.rotate(90)
+    drive.straight(-2, backwards=True)
+    beton.down()
+    drive.straight(2)
+    drive.toPos(vec2(168, 25), backwards=True)
+    drive.rotate(-90)
+    drive.straight(-10,backwards=True)
+    beton.up()
+    drive.straight(10)
+    
+    #BLUE
+    #beton.pickUp(vec2(227, 51))
+    #drive.straight(10)
+    #drive.rotate(90)
+    
+    #drive.toPos(vec2(200, 21))
+    drive.toPos(vec2(196, 18),backwards=True)
+    drive.toPos(vec2(161, 13.3),backwards=True)
+    drive.rotate(0)
+    beton.down()
+    
+    drive.toPos(vec2(89, 13.3),backwards=True)
+    drive.toPos(vec2(59, 39),backwards=True)
+    drive.toPos(vec2(30, 24),backwards=True)
+    drive.rotate(50)
+    return
+    drive.toPos(vec2(105, 15))
+    drive.toPos(vec2(61, 34),backwards=True)
+    drive.toPos(vec2(61, 70),backwards=True)
+    drive.toPos(vec2(88, 70),backwards=True)
+    beton.up()
+    
+    
+    drive.toPos(vec2(70, 70))
+    drive.toPos(vec2(70, 19), backwards=True)
+    drive.rotate(135)
+    beton.down()
+    drive.rotate(180)
+    drive.toPos(vec2(30, 19))
+    drive.straight(-10)
+    drive.toPos(vec2(22, 19))
+    
+    return
     #miska and hladítko
     drive.toPos(vec2(130, 20))
     drive.rotate(30)

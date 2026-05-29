@@ -28,8 +28,8 @@ class driveManager:
         self.turnCoeff = 3
         self.brake = True
         #rotate
-        self.tolDiff = pi/90
-        self.accuracy = 0.01
+        self.tolDiff = pi/180
+        self.accuracy = 0.005
         self.racc = 500
         self.rdeacc = 500
         self.braker = True
@@ -51,15 +51,15 @@ class driveManager:
         
     def setPreciseMode(self):
         #both
-        self.defspeed = 50
+        self.defspeed = 120
         #drive
-        self.acc = 20
-        self.deacc = 20
+        self.acc = 30
+        self.deacc = 10
         self.turnCoeff = 10
         self.brake = True
         #rotate
-        self.tolDiff = pi/180
-        self.accuracy = 0.001
+        self.tolDiff = pi/200
+        self.accuracy = 0.0006
         self.racc = 100
         self.rdeacc = 100
         self.braker = True
