@@ -91,17 +91,36 @@ class betonovator:
         self.motor = Motor(motor)
         self.excentricity = excentricity
     
-    def aling(self): #not used
-        self.motor.run_target(1000, 0)
+    def align(self): #not used
+        self.motor.run_target(1000, 10)
 
     def up(self):
         self.motor.run_target(1000, 55)
 
     def down(self):
-        self.motor.run_target(500, -30)
+        self.motor.run_target(500, -35)
+
+    def gentledown(self):
+        self.motor.run_target(100, -35)
         
     def flakanec(self):
-        self.motor.run_target(1000, -35, wait=False)
+        self.motor.run_target(1000, -30, wait=False)
+
+    def pulse(self):
+        self.drive.setFastMode
+        for i in range(2):
+            self.flakanec()
+            wait(500)
+            self.drive.straight(10)
+            self.align()
+            self.drive.straight(-10, backwards=True)
+        for i in range(2):
+            self.flakanec()
+            wait(500)
+            self.drive.straight(7)
+            self.align()
+            self.drive.straight(-6, backwards=True)
+        self.drive.setDefaultMode()
 
     def pickUp(self, pos: vec2):
         self.drive.toPos(pos+self.excentricity - vec2(3, 0), backwards=True)
@@ -109,6 +128,13 @@ class betonovator:
         self.down()
         self.drive.straight(-4, backwards=True)
         self.flakanec()
+
+    def dropOff(self, pos: vec2, roatation: float):
+        self.drive.toPos(pos + mat2.rotation(radians(roatation)) * self.excentricity, backwards=True)
+        self.drive.rotate(180 + roatation)
+        self.up()
+        self.drive.straight(100)
+    
 
 class Line:
     def __init__(self, a: vec2, b: vec2):
@@ -192,6 +218,7 @@ def gridFit(distance = -15, backwards = True, speed = 200, gyroTrust = True, cor
     initAngle = drive.robot.hub.angle()
     initialPos = drive.robot.pos
     antidata = [False, 0]
+    fitted = False
     while not antidata[0]:
         antidata = straightAntifail2(distance, backwards, speed)
         print(antidata)
@@ -200,12 +227,14 @@ def gridFit(distance = -15, backwards = True, speed = 200, gyroTrust = True, cor
         if gyroTrust:
             drive.rotate(initAngle, speed = 500)
         if not antidata[0]:
+            fitted = True
             drive.straight(-distanceTraveled, speed, not backwards)
             drive.rotate(drive.robot.hub.angle() + correction * side, speed = 500)
+    return fitted
             
 
 def WRO():
-    """
+    
     #start system
     drive.robot.hub.m_hub.system.set_stop_button(Button.CENTER)
     drive.robot.hub.image(wroimg)
@@ -215,10 +244,10 @@ def WRO():
     while drive.robot.hub.isButtonPressed(Button.BLUETOOTH):
         wait(10)
     drive.robot.hub.m_hub.system.set_stop_button(Button.BLUETOOTH)
-    """
+    
 
     #inicialization
-    drive.robot.pos = vec2(18.5,11.5)
+    drive.robot.pos = vec2(18.5,12.3)
     drive.robot.hub.resetAngle()
     drive.robot.hub.addOffset(-90)
     print(drive.robot.hub.angle(), " | ", drive.robot.pos)
@@ -269,10 +298,11 @@ def WRO():
     """
     drive.rotate(180, speed = 300)
     drive.toPos(vec2(100,69.6),backwards=True, speed = 300)
-    gridFit()
+    if gridFit():
+        drive.robot.pos = vec2(drive.robot.pos.x, 72)
     #carpet bombing (unloading cubes)
     c = vec2(5.48, 0)
-    pos = vec2(124, 69.6)
+    pos = vec2(122, drive.robot.pos.y) #124
     #drive.toPos(vec2(125, 70),backwards=True, speed = 500)
     drive.setPreciseMode()
     drive.toPos(pos, backwards=True, speed = 500)
@@ -334,8 +364,8 @@ def WRO():
     #yellow
     beton.pickUp(vec2(224, 98))
     drive.straight(10)
-    drive.toPos(vec2(176,25), backwards=True)
-    drive.toPos(vec2(122,25), backwards=True)
+    drive.toPos(vec2(176,26), backwards=True)
+    drive.toPos(vec2(122,26), backwards=True)
     drive.rotate(-90,speed = 200)
     drive.toPos(vec2(122,41.5), backwards=True)
     beton.up()
@@ -346,22 +376,27 @@ def WRO():
     #miska
     drive.rotate(90)
     drive.straight(-2, backwards=True)
-    beton.down()
+    beton.gentledown()
     drive.straight(2)
     drive.toPos(vec2(168, 25), backwards=True)
     drive.rotate(-90)
     drive.straight(-10,backwards=True)
     beton.up()
-    drive.straight(10)
+    #drive.straight(15)
+    #drive.rotate(90)
+    #alignWall(wallX, rBack, -500)
     
     #BLUE
-    #beton.pickUp(vec2(227, 51))
+    #beton.pickUp(vec2(227, 51))p
     #drive.straight(10)
     #drive.rotate(90)
 
     #nástroje
-    #drive.toPos(vec2(200, 21))
-    drive.toPos(vec2(196, 18),backwards=True)
+    drive.toPos(vec2(200, 21))
+    #drive.straight(5)
+    #drive.robot.hub.beep(300, 100)
+    #drive.rotate(0)
+    #drive.toPos(vec2(196, 18),backwards=True)
     drive.toPos(vec2(161, 13.3),backwards=True)
     drive.rotate(0)
     beton.down()
@@ -370,10 +405,22 @@ def WRO():
     drive.toPos(vec2(59, 39),backwards=True)
     drive.toPos(vec2(30, 24),backwards=True)
     drive.rotate(50)
+    beton.up()
+
+    #extra
+    drive.toPos(vec2(65, 80))
+    drive.rotate(270)
+    beton.down()
+    drive.toPos(vec2(40, 50))
+    drive.rotate(70)
+    beton.up()
+    drive.straight(10)
+    beton.down()
+    drive.straight(-25, backwards=True)
     return
     
 def WROday():
-    """
+    
     #start system
     drive.robot.hub.m_hub.system.set_stop_button(Button.CENTER)
     drive.robot.hub.image(wroimg2)
@@ -383,13 +430,105 @@ def WROday():
     while drive.robot.hub.isButtonPressed(Button.BLUETOOTH):
         wait(10)
     drive.robot.hub.m_hub.system.set_stop_button(Button.BLUETOOTH)
-    """
+    
+
     #inicialization
-    drive.robot.pos = vec2(18.5,11.5)
+    drive.robot.pos = vec2(18.5,12.3)
     drive.robot.hub.resetAngle()
     drive.robot.hub.addOffset(-90)
     print(drive.robot.hub.angle(), " | ", drive.robot.pos)
     h = handleCube(drive, Port.F, Port.C, vec2(0,0))
     beton = betonovator(drive, Port.B, vec2(-12,0))
     h.up()
+    beton.up()
+
+    #cube loading
+    a = 7.2
+    b = 9.2
+    drive.toPos(vec2(19,29.3))
+    drive.setPreciseMode()
+    #drive.rotate(90)
+    #drive.setDefaultMode()
+    h.pickUp()
+    drive.toPos(vec2(19,29.3+a))
+    #drive.setPreciseMode()
+    #drive.rotate(90)
+    #drive.setDefaultMode()
+    h.pickUp()
+    
+    #/overkill
+    drive.setDefaultMode()
+    drive.toPos(vec2(70, 69))
+    drive.rotate(180)
+    drive.straight(-13, backwards=True)
+    beton.down()
+    beton.flakanec()
+    drive.rotate(160)
+    drive.rotate(200)
+
+    #/fill 1
+    drive.toPos(vec2(40, 60))
+    drive.toPos(vec2(27, 30), backwards=True)
+    drive.rotate(45)
+    beton.up()
+
+    #/overkill
+    drive.toPos(vec2(70, 68))
+    drive.rotate(180)
+    beton.align()
+    drive.straight(-32, backwards=True)
+    beton.pulse()
+    beton.flakanec()
+
+    #/fill2
+    drive.toPos(vec2(40, 60))
+    drive.toPos(vec2(30, 30), backwards=True)
+    drive.rotate(45)
+    beton.up()
+
+    #/load
+    drive.toPos(vec2(50, 70))
+    drive.toPos(vec2(100,69.6))
+    drive.rotate(0)
+    #if gridFit(15, backwards=False, correction=5):
+    #    drive.robot.pos = vec2(drive.robot.pos.x, 72)
+    drive.straight(13)
+    h.release()
+    drive.straight(-20, backwards= True, speed=300)
+
+    #/golf
+    beton.align()
+    drive.toPos(vec2(65, 70), backwards=True)
+    drive.toPos(vec2(65, 40), backwards=True)
+    drive.rotate(180)
+    drive.straight(-14, backwards=True)
+    drive.straight(14)
+    drive.toPos(vec2(60, 95), backwards=True)
+    drive.rotate(180)
+    drive.straight(-14, backwards=True)
+    drive.straight(10)
+    
+    #white
+    drive.toPos(vec2(50, 25))
+    drive.toPos(vec2(117, 25), backwards=True)
+    drive.toPos(vec2(117, 40), backwards=True)
+    beton.down()
+    beton.flakanec()
+    drive.rotate(250)
+    drive.rotate(290)
+    drive.rotate(270)
+    drive.straight(15)
+    drive.toPos(vec2(70, 20))
+    beton.up()
+    beton.align()
+    drive.toPos(vec2(180, 30))
+
+    #golf 3
+    drive.toPos(vec2(150, 40), backwards=True)
+    drive.straight(5)
+    beton.down()
+
+    #white2
+    drive.toPos(vec2(210,97))
+    drive.rotate(180)
     beton.up()
