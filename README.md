@@ -34,14 +34,6 @@ To znamená, že robot si vede vlastní souřadnicový systém. Když je poloha 
 
 Podrobné vysvětlení je v [docs/pohyb.md](docs/pohyb.md).
 
-## Hlavní režimy
-
-- `vyzvajesenik()` - delší scénář s ramenem a kontrolou barvy.
-- `vyzvajesenik2()` - kratší varianta s jednodušší trasou.
-- `vyzvajesenik3()` - další varianta s delší koncovou sekcí.
-- `WRO()` - samostatný režim pro WRO logiku.
-- `Roadmain()` a `ultraroad()` - režimy pro roadside úlohy.
-
 ## Důležité funkce pro pohyb
 
 - `drive.rotate(angle)` a `drive.rotateRad(angle)` - otočení na zadaný úhel.
