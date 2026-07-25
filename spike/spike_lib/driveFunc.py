@@ -1,7 +1,7 @@
 from spike_lib.maths import vec2, mat2, Line, sign, clamp, minV, maxV, generateBezierCurve, angleDiff
 from spike_lib.robot import *
 from pybricks.tools import wait
-from umath import pi, fabs, asin, atan2, cos, sin
+from umath import pi, fabs, asin, atan2, cos, sin, radians
 
 #todo circle to pos background
 
@@ -254,7 +254,7 @@ class DriveManager:
         elif not connect[1]:
             self.robot.stop(self.brake)
             
-    def toPos(self, pos, speed = 1000, backwards = False, stop = True, turn = True, tolerance = 0.0, extraDist = 10.0, background=False, connect = [False, False]):
+    def _toPos(self, pos, speed = 1000, backwards = False, stop = True, turn = True, tolerance = 0.0, extraDist = 10.0, background=False, connect = [False, False]):
         if background:
             self.addTask(self.toPosGen(pos, speed = speed, backwards = backwards, stop = stop, turn = turn, tolerance = tolerance, extraDist = extraDist, background=background, connect=connect))
         else:
@@ -262,9 +262,20 @@ class DriveManager:
                 self.runTasks()
                 pass
     
-    def straight(self, length, speed = 1000, backwards = False, background = False):
-        self.toPos(self.robot.pos + mat2.rotation(self.robot.hub.angleRad()) * vec2(length,0), speed, backwards, background=background)
+    def topos(self, x, y, backwards = False, speed = 1000 , stop = True, turn = True, tolerance = 0.0, extraDist = 10.0, background=False, connect = [False, False]):
+        self._toPos(vec2(x, y), speed = speed, backwards = backwards, stop = stop, turn = turn, tolerance = tolerance, extraDist = extraDist, background=background, connect=connect)
 
+    def straightPolar(self, length, angle, backwards = False, speed = 1000, background = False):
+        self._toPos(self.robot.pos + mat2.rotation(radians(angle)) * vec2(length,0), speed, backwards, background=background)
+
+    def straight(self, length, speed = 1000, background = False):
+        if length >= 0:
+            backwards = False
+            shift = 0
+        else:
+            backwards = True
+            shift = pi
+        self.straightPolar(fabs(length), self.robot.hub.angleRad() + shift, backwards = backwards, speed = speed, background = background)
 
 
 
@@ -363,12 +374,12 @@ class DriveManager:
         self.cFinish = points[len(points)-1]
         for i in range(numOfPoints+1):
             if i == 0:
-                self.toPos(points[i], tolerance=self.cTolerance)
+                self._toPos(points[i], tolerance=self.cTolerance)
             elif i == 1:
-                self.toPos(points[i], tolerance=self.cTolerance,stop=False, speed=speed)
+                self._toPos(points[i], tolerance=self.cTolerance,stop=False, speed=speed)
             elif i == numOfPoints:
-                self.toPos(points[i], turn=False, speed=speed)
+                self._toPos(points[i], turn=False, speed=speed)
             else:
-                self.toPos(points[i], turn = False, stop=False, tolerance=self.cTolerance, extraDist=0.0,speed=speed)
+                self._toPos(points[i], turn = False, stop=False, tolerance=self.cTolerance, extraDist=0.0,speed=speed)
         self.cStart = self.cFinish = vec2(0,0)
     

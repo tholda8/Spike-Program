@@ -2,11 +2,12 @@ from pybricks.hubs import PrimeHub
 from imgs import *
 from spike_lib.screen import *
 from test import *
-from spike_lib.robot import hub
+from spike_lib.robot import Hub
 
 print("Starting program")
-menu = Screen(hub())
-menu.addPage(Page(hallo, icon=wroimg, image=arrow, delta=110))
+menu = Screen(Hub())
+menu.addPage(Page(test, icon=Itest, image=arrow, delta=110))
+menu.addPage(Page(testII, icon=ItestI, image=arrow, delta=110))
 
 
 menu.start()
