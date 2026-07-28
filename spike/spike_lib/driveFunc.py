@@ -254,7 +254,7 @@ class DriveManager:
         elif not connect[1]:
             self.robot.stop(self.brake)
             
-    def _toPos(self, pos, speed = 1000, backwards = False, stop = True, turn = True, tolerance = 0.0, extraDist = 10.0, background=False, connect = [False, False]):
+    def toPos(self, pos, speed = 1000, backwards = False, stop = True, turn = True, tolerance = 0.0, extraDist = 10.0, background=False, connect = [False, False]):
         if background:
             self.addTask(self.toPosGen(pos, speed = speed, backwards = backwards, stop = stop, turn = turn, tolerance = tolerance, extraDist = extraDist, background=background, connect=connect))
         else:
@@ -262,11 +262,11 @@ class DriveManager:
                 self.runTasks()
                 pass
     
-    def topos(self, x, y, backwards = False, speed = 1000 , stop = True, turn = True, tolerance = 0.0, extraDist = 10.0, background=False, connect = [False, False]):
-        self._toPos(vec2(x, y), speed = speed, backwards = backwards, stop = stop, turn = turn, tolerance = tolerance, extraDist = extraDist, background=background, connect=connect)
+    def tp(self, x, y, backwards = False, speed = 1000 , stop = True, turn = True, tolerance = 0.0, extraDist = 10.0, background=False, connect = [False, False]):
+        self.toPos(vec2(x, y), speed = speed, backwards = backwards, stop = stop, turn = turn, tolerance = tolerance, extraDist = extraDist, background=background, connect=connect)
 
     def straightPolar(self, length, angle, backwards = False, speed = 1000, background = False):
-        self._toPos(self.robot.pos + mat2.rotation(radians(angle)) * vec2(length,0), speed, backwards, background=background)
+        self.toPos(self.robot.pos + mat2.rotation(radians(angle)) * vec2(length,0), speed, backwards, background=background)
 
     def straight(self, length, speed = 1000, background = False):
         if length >= 0:
@@ -374,12 +374,12 @@ class DriveManager:
         self.cFinish = points[len(points)-1]
         for i in range(numOfPoints+1):
             if i == 0:
-                self._toPos(points[i], tolerance=self.cTolerance)
+                self.toPos(points[i], tolerance=self.cTolerance)
             elif i == 1:
-                self._toPos(points[i], tolerance=self.cTolerance,stop=False, speed=speed)
+                self.toPos(points[i], tolerance=self.cTolerance,stop=False, speed=speed)
             elif i == numOfPoints:
-                self._toPos(points[i], turn=False, speed=speed)
+                self.toPos(points[i], turn=False, speed=speed)
             else:
-                self._toPos(points[i], turn = False, stop=False, tolerance=self.cTolerance, extraDist=0.0,speed=speed)
+                self.toPos(points[i], turn = False, stop=False, tolerance=self.cTolerance, extraDist=0.0,speed=speed)
         self.cStart = self.cFinish = vec2(0,0)
     
