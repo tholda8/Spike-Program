@@ -2,12 +2,12 @@ from setup import *
 from pybricks.tools import wait
 from tester import *
 from imgs import wroimg, wroimg2
-from maths import pi, mat2
+from spike_lib.maths import pi, mat2, sign, vec2, clamp
 from umath import radians, cos, pi, degrees
 
 
 class handleCube:
-    def __init__(self, drive: driveManager, liftMotor: Port, grabMotor: Port, excentricity: vec2):
+    def __init__(self, drive: DriveManager, liftMotor: Port, grabMotor: Port, excentricity: vec2):
         """
         has 3 chambers for cubes and 2 motors for lifting and grabbing cubes
         excentricity: center in center of rotation; x in direction of motion; y perpendicular to x positive to the left, measured in read/write position"""
@@ -85,7 +85,7 @@ class handleCube:
             self.drive.straight(-5)
 
 class betonovator:
-    def __init__(self, drive: driveManager, motor: Port, excentricity):
+    def __init__(self, drive: DriveManager, motor: Port, excentricity):
         """excentricity: center in center of rotation; x in direction of motion; y perpendicular to x positive to the left, measured in read/write position"""
         self.drive = drive
         self.motor = Motor(motor)

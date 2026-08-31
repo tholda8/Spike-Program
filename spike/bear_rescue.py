@@ -1,5 +1,5 @@
 
-
+from spike_lib.maths import vec2, avr
 from setup import *                                                                                                                                                                                                                                                                                
 from pybricks.tools import wait
 from tester import *
