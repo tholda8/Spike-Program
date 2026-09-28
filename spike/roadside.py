@@ -1,6 +1,7 @@
 from setup import *                                                                                                                                                                                                                                                                                
 from pybricks.tools import wait
 from tester import *
+from spike_lib.maths import clamp
 
 #setup class
 drive.hook_speeds = [1, -1]

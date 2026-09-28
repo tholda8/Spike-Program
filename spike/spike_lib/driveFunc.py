@@ -5,7 +5,7 @@ from umath import pi, fabs, asin, atan2, cos, sin, radians
 
 #todo circle to pos background
 
-class DriveSettings:
+class DriveSettings: #DV jako náhrada za jízdní módy, pomocí tohohle by to bylo pěknější, ale zatím to nikdo nedokončil
     def __init__(self, defspeed = 250, acc = 80, deacc = 30, turnCoeff = 3, brake = True, tolDiff = pi/180, accuracy = 0.005, racc = 500, rdeacc = 500, braker = True):
         #both
         self.defspeed = defspeed
