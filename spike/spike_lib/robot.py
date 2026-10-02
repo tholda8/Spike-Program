@@ -106,8 +106,8 @@ class motor(Rdevice):
 
 class Hub:
     def __init__(self, topSide: Axis = Axis.Z, frontSide: Axis = Axis.X):
-        self.m_hub = PrimeHub(topSide, frontSide)
-        self.topSide = topSide
+        self.m_hub = PrimeHub() #(topSide, frontSide) 
+        self.topSide = topSide #Z nějakého důvodu zakomentované argumenty výše mění názvy všech os
         self.frontSide = frontSide
         self.angleOffset = 0
         self.resetAngle()

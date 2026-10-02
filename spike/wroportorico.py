@@ -37,7 +37,7 @@ def wroportorico():
     #drive.robot.pos = vec2(0,0)
     
     drive.robot.pos = vec2(18.5, 14.5)
-    drive.robot.addDevice(motor(Port.A))
+    drive.robot.addDevice(motor(Port.D))
     drive.robot.addDevice(motor(Port.C))
     lift = liftClass(drive)
     drive.robot.hub.resetAngle()
