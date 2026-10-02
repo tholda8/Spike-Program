@@ -22,9 +22,9 @@ drive.robot.hub.addOffset(-90)
 
 ## 2. Jak se počítá poloha robota
 
-Skutečný posun robota se počítá v `robot.update()`.
+Skutečný posun robota se počítá v metodě `update()` instance třídy `Robot`.
 
-Ta funkce volá `navigate(...)` v [robot.py](../robot.py), která udělá toto:
+Tato metoda volá `navigate(...)` v [robot.py](../spike/spike_lib/robot.py), která udělá toto:
 
 1. vezme změnu natočení levého a pravého kola od poslední aktualizace
 2. z těchto změn spočítá přibližný posun dopředu
@@ -37,7 +37,7 @@ Prakticky to znamená, že když robot jede dopředu a je lehce vytočený, dal�
 
 ## 3. Jak funguje gyro
 
-V [robot.py](../robot.py) je třída `hub`.
+V [robot.py](../spike/spike_lib/robot.py) je třída `Hub`. V příkladech níže je `hub` její instance uložená v objektu `Robot`.
 
 - `hub.angle()` vrací orientaci z IMU v stupních
 - `hub.angleRad()` vrací totéž v radiánech
@@ -48,7 +48,7 @@ To je základ celého souřadnicového řízení. Když je gyro správně zkalib
 
 ## 4. Jízda na bod
 
-Nejdůležitější funkce je `drive.toPos(...)` v [driveFunc.py](../driveFunc.py).
+Nejdůležitější funkce je `drive.toPos(...)` v [driveFunc.py](../spike/spike_lib/driveFunc.py).
 
 Zjednodušeně funguje takto:
 
@@ -72,7 +72,7 @@ Pokud je `background=True`, pohyb se nepustí hned blokující smyčkou, ale ulo
 
 `drive.straight(length, ...)` je jen zkrácená vrstva nad `toPos(...)`.
 
-V [driveFunc.py](../driveFunc.py) je implementace:
+V [driveFunc.py](../spike/spike_lib/driveFunc.py) je implementace:
 
 ```python
 def straight(self, length, speed = 1000, backwards = False, background = False):

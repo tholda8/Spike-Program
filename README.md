@@ -5,7 +5,7 @@ Tento repozitář obsahuje řízení robota pro LEGO SPIKE Prime, menu na hubu a
 ## Co je tady za co odpovědné
 
 - `main.py` - spouští menu a vybírá jednotlivé scénáře.
-- `setup.py` - skládá konkrétního robota, motorové směry a instanci `driveManager`.
+- `setup.py` - skládá konkrétního robota, motorové směry a instanci třídy `DriveManager` (uloženou v proměnné `drive`).
 - `robot.py` - nízkoúrovňové obaly nad motory, hubem, senzory a odometrií.
 - `driveFunc.py` - hlavní vrstva pro pohyb: otočení, jízda na bod, jízda rovně, kružnice a plánování úloh na pozadí.
 - `maths.py` - vektory, matice, PID a pomocné funkce.
@@ -19,7 +19,7 @@ Tento repozitář obsahuje řízení robota pro LEGO SPIKE Prime, menu na hubu a
 
 V `setup.py` je základní konfigurace robota:
 
-- levý a pravý motor jsou vytvořené jako `robot(Port.C, Port.D, 5.8, 11.2)`
+- levý a pravý motor jsou vytvořené jako `Robot(Port.E, Port.F, 5.8, 11.2)`
 - levý motor je obrácený přes `r.lM.reverse = True`
 - osa a nulový úhel se pak doladí přes `r.hub.addOffset(...)`
 

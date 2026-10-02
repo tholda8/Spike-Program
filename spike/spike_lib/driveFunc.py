@@ -23,6 +23,13 @@ class DriveSettings: #DV jako náhrada za jízdní módy, pomocí tohohle by to 
 
 class DriveManager:
     def __init__(self, robot: Robot):
+        """
+        **Info**
+        Initialize the drive manager.
+
+        **Parameters**
+        - robot: Robot instance controlled by this manager.
+        """
         self.robot = robot
         self.setDefaultMode()
         #curves
@@ -36,21 +43,53 @@ class DriveManager:
 
     #multitasking
     def isTasksRunning(self, numOfTasks = 0):
+        """
+        **Info**
+        Check whether the number of queued tasks exceeds a threshold.
+
+        **Parameters**
+        - numOfTasks: Task count threshold; defaults to zero.
+
+        **Return**
+        - True if more than numOfTasks tasks are queued; otherwise False.
+        """
         if len(self.tasks) > numOfTasks:
             return True
         return False
     
     def waitForTasks(self, numOfTasks = 0):
+        """
+        **Info**
+        Run queued tasks until their count is no greater than the threshold.
+
+        **Parameters**
+        - numOfTasks: Task count threshold to wait for; defaults to zero.
+        """
         while self.isTasksRunning(numOfTasks = numOfTasks):
             self.runTasks()
     
     def stopTasks(self):
+        """
+        **Info**
+        Remove all queued tasks without advancing them.
+        """
         self.tasks = []
     
     def addTask(self, gen):
+        """
+        **Info**
+        Add a generator task to the task queue.
+
+        **Parameters**
+        - gen: Generator to advance when queued tasks are run.
+        """
         self.tasks.append(gen)
     
     def runTasks(self):
+        """
+        **Info**
+        Advance each queued task once and remove tasks that have completed.
+        """
         for task in self.tasks[:]:
             try:
                 next(task)
@@ -148,10 +187,29 @@ class DriveManager:
         self.braker = True   
     
     def setMotorsToDef(self):
+        """
+        **Info**
+        Set the angle reference of the first two registered devices to zero.
+        """
         self.robot.devices[0].setDefAngle()
         self.robot.devices[1].setDefAngle()
     
     def turnMotorRadGen(self, deviceID, angle:float, speed = 1000, simple = False, time = 0):
+        """
+        **Info**
+        Generate incremental motor-turn updates until the target angle is reached
+        or the time counter expires.
+
+        **Parameters**
+        - deviceID: Index of the motor device in the robot's device list.
+        - angle: Target motor angle in radians.
+        - speed: Maximum motor speed.
+        - simple: If True, use the unnormalized angle difference.
+        - time: Optional iteration counter; zero disables the counter limit.
+
+        **Return**
+        - Generator yielding once per motor control update.
+        """
         dif = angleDiff(self.robot.devices[deviceID].angleRad(), angle, simple=simple)
         dif = angleDiff(self.robot.devices[deviceID].angleRad(), angle, simple=simple)
         doTime = True
@@ -168,6 +226,18 @@ class DriveManager:
             print("lol")
     
     def turnMotorRad(self, deviceID, angle:float, speed = 1000, background = False, simple = False, time = 0):
+        """
+        **Info**
+        Turn a motor to a target angle specified in radians.
+
+        **Parameters**
+        - deviceID: Index of the motor device in the robot's device list.
+        - angle: Target motor angle in radians.
+        - speed: Maximum motor speed.
+        - background: If True, queue the turn as a background task.
+        - simple: If True, use the unnormalized angle difference.
+        - time: Optional iteration counter; zero disables the counter limit.
+        """
         if background:
             self.addTask(self.turnMotorRadGen(deviceID, angle, speed = speed, simple=simple, time = time))
         else:
@@ -176,9 +246,31 @@ class DriveManager:
                 pass
         
     def turnMotor(self, deviceID, angle:float, speed = 1000, background = False, simple = False, time = 0):
+        """
+        **Info**
+        Turn a motor to a target angle specified in degrees.
+
+        **Parameters**
+        - deviceID: Index of the motor device in the robot's device list.
+        - angle: Target motor angle in degrees.
+        - speed: Maximum motor speed.
+        - background: If True, queue the turn as a background task.
+        - simple: If True, use the unnormalized angle difference.
+        - time: Optional iteration counter; zero disables the counter limit.
+        """
         self.turnMotorRad(deviceID, angle/180 * pi, speed=speed, background=background, simple=simple, time=time)
     
     def circle(self, center, circlePercentage, speed = 1000):
+        """
+        **Info**
+        Drive along a circular arc around a center point.
+
+        **Parameters**
+        - center: Center of the circle as a vec2.
+        - circlePercentage: Fraction of a full circle to travel; sign controls
+          the direction.
+        - speed: Maximum driving speed.
+        """
         angle = asin((center - self.robot.pos).normalize().y) - sign(circlePercentage)*pi*0.5
         self.rotateRad(angle)
         finalPos = mat2.rotation(2*pi*circlePercentage)*(self.robot.pos - center) + center
@@ -200,6 +292,18 @@ class DriveManager:
         self.robot.stop(self.brake)
 
     def calcDir(self, pos, length, speed, offsetAngle, backwards = False, extraDist = 0.0):
+        """
+        **Info**
+        Set drive-motor speeds to steer toward a point along a straight path.
+
+        **Parameters**
+        - pos: Current position in the path-aligned coordinate frame.
+        - length: Target distance along the path.
+        - speed: Requested driving speed.
+        - offsetAngle: Heading angle of the path in radians.
+        - backwards: If True, drive in reverse.
+        - extraDist: Additional distance included in the target calculation.
+        """
         a2 = (self.robot.hub.angleRad()-offsetAngle) % (2*pi)
         pos = vec2(length + extraDist - pos.x, -pos.y)
         a1 = atan2(pos.y, pos.x) % (2*pi)
@@ -214,6 +318,20 @@ class DriveManager:
             self.robot.setSpeed(speedM*mult, speed*mult)
 
     def calcSpeed(self, pos, length, speed, connect = [False, False]):
+        """
+        **Info**
+        Calculate drive speed from acceleration and deceleration distances.
+
+        **Parameters**
+        - pos: Current position in the path-aligned coordinate frame.
+        - length: Target distance along the path.
+        - speed: Requested maximum speed.
+        - connect: Pair of flags indicating connected path segments at start
+          and end.
+
+        **Return**
+        - Calculated speed clamped between the default speed and speed.
+        """
         if self.cStart == self.cFinish:
             accSpeed = speed
             deaccSpeed = speed
@@ -228,6 +346,25 @@ class DriveManager:
         return clamp(fabs(maxV(deaccSpeed,accSpeed)), self.defspeed ,speed)
 
     def toPosGen(self, pos, speed = 1000, backwards = False, stop = True, turn = True, tolerance = 0.0, extraDist = 0.0, background = False, connect = [False, False]):
+        """
+        **Info**
+        Generate updates while driving the robot to a position.
+
+        **Parameters**
+        - pos: Target position as a vec2.
+        - speed: Maximum driving speed.
+        - backwards: If True, drive toward the target in reverse.
+        - stop: If True, brake at the target unless the end is connected.
+        - turn: If True, turn to face the target before driving.
+        - tolerance: Distance tolerance for reaching the target.
+        - extraDist: Additional distance used in steering.
+        - background: If True, turn handling may be queued as a background task.
+        - connect: Pair of flags indicating connected path segments at start
+          and end.
+
+        **Return**
+        - Generator yielding once per position-control update.
+        """
         offset:vec2 = self.robot.pos
         angle:float = atan2((pos-offset).y,(pos-offset).x)
         rotMat:mat2 = mat2.rotation(-angle)
@@ -255,6 +392,22 @@ class DriveManager:
             self.robot.stop(self.brake)
             
     def toPos(self, pos, speed = 1000, backwards = False, stop = True, turn = True, tolerance = 0.0, extraDist = 10.0, background=False, connect = [False, False]):
+        """
+        **Info**
+        Drive the robot to a target position.
+
+        **Parameters**
+        - pos: Target position as a vec2.
+        - speed: Maximum driving speed.
+        - backwards: If True, drive toward the target in reverse.
+        - stop: If True, brake at the target unless the end is connected.
+        - turn: If True, turn to face the target before driving.
+        - tolerance: Distance tolerance for reaching the target.
+        - extraDist: Additional distance used in steering.
+        - background: If True, queue movement as a background task.
+        - connect: Pair of flags indicating connected path segments at start
+          and end.
+        """
         if background:
             self.addTask(self.toPosGen(pos, speed = speed, backwards = backwards, stop = stop, turn = turn, tolerance = tolerance, extraDist = extraDist, background=background, connect=connect))
         else:
@@ -263,12 +416,49 @@ class DriveManager:
                 pass
     
     def tp(self, x, y, backwards = False, speed = 1000 , stop = True, turn = True, tolerance = 0.0, extraDist = 10.0, background=False, connect = [False, False]):
+        """
+        **Info**
+        Drive the robot to an x/y target position.
+
+        **Parameters**
+        - x: Target horizontal coordinate.
+        - y: Target vertical coordinate.
+        - backwards: If True, drive toward the target in reverse.
+        - speed: Maximum driving speed.
+        - stop: If True, brake at the target unless the end is connected.
+        - turn: If True, turn to face the target before driving.
+        - tolerance: Distance tolerance for reaching the target.
+        - extraDist: Additional distance used in steering.
+        - background: If True, queue movement as a background task.
+        - connect: Pair of flags indicating connected path segments at start
+          and end.
+        """
         self.toPos(vec2(x, y), speed = speed, backwards = backwards, stop = stop, turn = turn, tolerance = tolerance, extraDist = extraDist, background=background, connect=connect)
 
     def straightPolar(self, length, angle, backwards = False, speed = 1000, background = False):
+        """
+        **Info**
+        Drive a specified distance along an angle.
+
+        **Parameters**
+        - length: Distance to travel.
+        - angle: Heading direction in degrees.
+        - backwards: If True, drive in reverse.
+        - speed: Maximum driving speed.
+        - background: If True, queue movement as a background task.
+        """
         self.toPos(self.robot.pos + mat2.rotation(radians(angle)) * vec2(length,0), speed, backwards, background=background)
 
     def straight(self, length, speed = 1000, background = False):
+        """
+        **Info**
+        Drive straight forward or backward by a specified distance.
+
+        **Parameters**
+        - length: Signed distance to travel; negative values drive backward.
+        - speed: Maximum driving speed.
+        - background: If True, queue movement as a background task.
+        """
         if length >= 0:
             backwards = False
             shift = 0
@@ -281,11 +471,34 @@ class DriveManager:
 
 
     def calcSpeedR(self, angle:float, speed:float, angleInit:float):
+        """
+        **Info**
+        Calculate rotation speed using the remaining and initial angle errors.
+
+        **Parameters**
+        - angle: Remaining angle error in radians.
+        - speed: Requested maximum rotation speed.
+        - angleInit: Initial angle error in radians.
+
+        **Return**
+        - Calculated rotation speed, capped at the requested speed.
+        """
         rspeed = fabs(angle) * self.rdeacc + self.defspeed
         aspeed = fabs(angleInit) * self.racc + self.defspeed
         return maxV(maxV(rspeed,aspeed),speed)
 
     def rotateRadGen(self, angle, speed = 1000):
+        """
+        **Info**
+        Generate incremental updates while rotating to a target heading.
+
+        **Parameters**
+        - angle: Target heading in radians.
+        - speed: Maximum rotation speed.
+
+        **Return**
+        - Generator yielding once per rotation-control update.
+        """
         angleInit = self.robot.hub.angleRad()
         angleInitD = 0
         angleD = angleDiff(self.robot.hub.angleRad(), angle)
@@ -302,6 +515,15 @@ class DriveManager:
         self.robot.stop(self.braker)
     
     def rotateRad(self, angle, speed = 1000, background = False):
+        """
+        **Info**
+        Rotate the robot to a target heading in radians.
+
+        **Parameters**
+        - angle: Target heading in radians.
+        - speed: Maximum rotation speed.
+        - background: If True, queue rotation as a background task.
+        """
         if background:
             self.addTask(self.rotateRadGen(angle, speed))
         else:
@@ -310,10 +532,32 @@ class DriveManager:
                 pass
 
     def rotate(self, angle, speed = 1000, background = False):
+        """
+        **Info**
+        Rotate the robot to a target heading in degrees.
+
+        **Parameters**
+        - angle: Target heading in degrees.
+        - speed: Maximum rotation speed.
+        - background: If True, queue rotation as a background task.
+        """
         self.rotateRad(angle/180 * pi, speed = speed, background=background)
     
     def calcSpeedDis(self, startPos, EndPos, speed, connect = [False, False]):
-       
+        """
+        **Info**
+        Calculate drive speed based on distance from the path's start and end.
+
+        **Parameters**
+        - startPos: Starting position of the path.
+        - EndPos: Ending position of the path.
+        - speed: Requested maximum speed.
+        - connect: Pair of flags indicating connected path segments at start
+          and end.
+
+        **Return**
+        - Calculated speed based on the path distances and connection flags.
+        """
         disToStart = (startPos - self.robot.pos).length()
         disToEnd = (EndPos - self.robot.pos).length()
         rspeed = speed
@@ -327,6 +571,21 @@ class DriveManager:
         return rspeed
 
     def circleToPosGen(self,pos, speed = 1000, connect = [False, False], accuracy = 0.2, backwards = False):
+        """
+        **Info**
+        Generate updates while following a curved path to a target position.
+
+        **Parameters**
+        - pos: Target position as a vec2.
+        - speed: Maximum driving speed.
+        - connect: Pair of flags indicating connected path segments at start
+          and end.
+        - accuracy: Distance threshold for reaching the target.
+        - backwards: If True, follow the curve in reverse.
+
+        **Return**
+        - Generator yielding once per curve-control update.
+        """
         startPos = self.robot.pos
         if accuracy == 0.2 and connect[1]:
             accuracy = 13
@@ -360,6 +619,19 @@ class DriveManager:
             self.robot.stop(self.brake)
 
     def circleToPos(self,pos, speed = 1000, connect = [False, False], accuracy = 0.2, backwards = False, background = False):
+        """
+        **Info**
+        Drive along a curved path to a target position.
+
+        **Parameters**
+        - pos: Target position as a vec2.
+        - speed: Maximum driving speed.
+        - connect: Pair of flags indicating connected path segments at start
+          and end.
+        - accuracy: Distance threshold for reaching the target.
+        - backwards: If True, follow the curve in reverse.
+        - background: If True, queue movement as a background task.
+        """
         if background:
             self.addTask(self.circleToPosGen(pos, speed = speed, connect = connect, accuracy = accuracy, backwards = backwards))
         else:
@@ -369,6 +641,18 @@ class DriveManager:
     
     
     def bezier(self, p0:vec2, p1:vec2, p2:vec2, p3:vec2, numOfPoints = 10, speed = 500):
+        """
+        **Info**
+        Drive the robot along a cubic Bezier curve.
+
+        **Parameters**
+        - p0: Starting point of the curve.
+        - p1: First control point.
+        - p2: Second control point.
+        - p3: Ending point of the curve.
+        - numOfPoints: Number of curve intervals and movement segments.
+        - speed: Maximum speed for curve segments.
+        """
         points = generateBezierCurve(p0, p1, p2, p3, numOfPoints)
         self.cStart = points[0]
         self.cFinish = points[len(points)-1]
