@@ -2,10 +2,6 @@
 import down
 from imgs import *
 from screen import *
-from vyzvajesenik import *
-from vyzvajesenik2 import *
-from vyzvajesenik3 import *
-#from wro import *
 from audio import *
 from wro2 import *
 from wroportorico import *

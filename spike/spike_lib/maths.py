@@ -1,4 +1,38 @@
 from umath import cos, sin, atan2, pi
+from pybricks.tools import StopWatch
+
+class PID:
+    def __init__(self, kp, ki, kd, max_integral=100):
+        self.kp = kp
+        self.ki = ki
+        self.kd = kd
+        self.prev_error = 0
+        self.integral = 0
+        self.max_integral = max_integral # Ochrana proti "wind-up" (přetečení integrálu)
+        self.timer = StopWatch()
+
+    def compute(self, error):
+        dt = self.timer.time() / 1000.0 # čas v sekundách od posledního volání
+        self.timer.reset()
+        
+        if dt == 0:
+            dt = 0.01 # Ochrana proti dělení nulou při prvním průchodu
+
+        # Proporcionální část (současná chyba)
+        p = self.kp * error
+        
+        # Integrační část (historie chyb - pomáhá překonat tření v závěru)
+        self.integral += error * dt
+        # Omezení integrálu, aby robot při dlouhé chybě "nevystřelil"
+        self.integral = max(-self.max_integral, min(self.integral, self.max_integral))
+        i = self.ki * self.integral
+        
+        # Derivační část (předvídání - brzdí pohyb, když se chyba rychle zmenšuje)
+        d = self.kd * ((error - self.prev_error) / dt)
+        
+        self.prev_error = error
+        
+        return p + i + d
 
 def generateBezierCurve(p0, p1, p2, p3, num_points=10):
     """Generate points on a cubic Bezier curve.
