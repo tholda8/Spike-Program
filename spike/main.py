@@ -1,11 +1,9 @@
 #from bear_rescue import bear_rescue
-import down
+from audio import megalovania
+from down import downFunc
 from imgs import *
-from screen import *
-from audio import *
-from wro2 import *
-from wroportorico import *
-from down import *
+from spike_lib.screen import Screen, Page
+from wroportorico import wroportorico
 
 menu = Screen(drive.robot.hub)
 #menu.addPage(Page(wro2, icon=wroimg, image = [fish,fish1], delta = 500))
@@ -24,5 +22,4 @@ menu.addPage(Page(lambda: play(megalovania, 1), icon=smile, image=[skull, skull,
 menu.start()
 while True:
     menu.update()
-
 

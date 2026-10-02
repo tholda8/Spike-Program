@@ -1,0 +1,1 @@
+#Tohle je archiv, tady jsou staré soubory, které mi bylo líto vyhodit, ale zavazí v aktivním prostoru.

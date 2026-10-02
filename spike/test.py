@@ -1,9 +1,6 @@
-from pybricks.parameters import *
-from pybricks.pupdevices import *
+from pybricks.parameters import Button, Port
+from pybricks.pupdevices import Motor
 from pybricks.hubs import PrimeHub
-from maths import *
-from umath import pi
-from pybricks.tools import *
 
 m = Motor(Port.A)
 

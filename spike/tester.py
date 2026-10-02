@@ -1,4 +1,4 @@
-from setup import *                                                                                                                                                                                                                                                                             
+from setup import drive
 from pybricks.tools import wait
 
 

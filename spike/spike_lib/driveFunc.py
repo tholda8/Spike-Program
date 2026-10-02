@@ -6,7 +6,7 @@ from umath import pi, fabs, asin, atan2, cos, sin, radians
 #todo circle to pos background
 
 class DriveSettings: #DV jako náhrada za jízdní módy, pomocí tohohle by to bylo pěknější, ale zatím to nikdo nedokončil
-    def __init__(self, defspeed = 250, acc = 80, deacc = 30, turnCoeff = 3, brake = True, tolDiff = pi/180, accuracy = 0.005, racc = 500, rdeacc = 500, braker = True):
+    def __init__(self, defspeed = 111, acc = 200, deacc = 70, turnCoeff = 2, brake = True, tolDiff = pi/100, accuracy = 0.03, racc = 1000, rdeacc = 600, braker = True):
         #both
         self.defspeed = defspeed
         #drive
@@ -59,17 +59,17 @@ class DriveManager:
 
     def setDefaultMode(self):
         #both
-        self.defspeed = 250
+        self.defspeed = 111
         #drive
-        self.acc = 80
-        self.deacc = 30
-        self.turnCoeff = 3
+        self.acc = 200
+        self.deacc = 70
+        self.turnCoeff = 2
         self.brake = True
         #rotate
-        self.tolDiff = pi/180
-        self.accuracy = 0.005
-        self.racc = 500
-        self.rdeacc = 500
+        self.tolDiff = pi/100
+        self.accuracy = 0.03
+        self.racc = 1000
+        self.rdeacc = 600
         self.braker = True
     
     def setFastMode(self):
@@ -78,12 +78,12 @@ class DriveManager:
         #drive
         self.acc = 300
         self.deacc = 300
-        self.turnCoeff = 5
+        self.turnCoeff = 2
         self.brake = True
         #rotate
-        self.tolDiff = pi/180
-        self.accuracy = 0.01
-        self.racc = 800
+        self.tolDiff = pi/90
+        self.accuracy = 0.05
+        self.racc = 10000
         self.rdeacc = 800
         self.braker = True
         
@@ -91,15 +91,15 @@ class DriveManager:
         #both
         self.defspeed = 120
         #drive
-        self.acc = 30
+        self.acc = 10
         self.deacc = 10
         self.turnCoeff = 10
         self.brake = True
         #rotate
         self.tolDiff = pi/200
         self.accuracy = 0.0006
-        self.racc = 100
-        self.rdeacc = 100
+        self.racc = 20
+        self.rdeacc = 20
         self.braker = True
         
     def setStartMode(self):
@@ -160,7 +160,7 @@ class DriveManager:
         
         while fabs(dif) > self.tolDiff*2 and (time > 0 or not doTime):
             dif = angleDiff(self.robot.devices[deviceID].angleRad(), angle, simple=simple)
-            self.robot.devices[deviceID].setSpeed(sign(dif) * clamp(speed*abs(dif)*0.5,110,200))
+            self.robot.devices[deviceID].setSpeed(sign(dif) * clamp(speed*abs(dif)*0.5,110,speed))
             time -= 1
             yield
         self.robot.devices[deviceID].hold()

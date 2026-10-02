@@ -1,6 +1,8 @@
-from setup import *                                                                                                                                                                                                                                                                                
+from pybricks.parameters import Port
 from pybricks.tools import wait
-from tester import *
+from spike_lib.maths import vec2
+from spike_lib.robot import motor
+from setup import drive
 
 class liftClass:
     def __init__(self, drive):
@@ -55,9 +57,9 @@ def wroportorico():
     lift.nearlydown()
     lift.release()
     
-    drive.straight(-4.6, speed=100, backwards=True)
+    drive.straight(-4.6, speed=100)
     lift.up()
-    drive.straight(-40, speed=1000, backwards=True)
+    drive.straight(-40, speed=1000)
     drive.toPos(vec2(18.5, 14.5),speed=1000, backwards=True)
     drive.rotate(90)
     lift.down()

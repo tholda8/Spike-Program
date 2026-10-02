@@ -1,6 +1,8 @@
-from setup import *                                                                                                                                                                                                                                                                                
+from pybricks.parameters import Port
 from pybricks.tools import wait
-from tester import *
+from spike_lib.maths import vec2
+from spike_lib.robot import motor
+from setup import drive
 
 class liftClass:
     def __init__(self, drive):
