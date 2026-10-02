@@ -1,10 +1,19 @@
-#from setup import *
+from setup import *
+from resources.funkytown import funkytown
 from pybricks.tools import Matrix
+
+#DV this implementation is very ugly!
+def play(notes,  mult = 1):
+    drive.robot.hub.setVolume(1000)
+    for freq, duration in notes:
+        drive.robot.hub.beep(freq, duration * mult)
+        #wait(duration)
         
-#def rotate():
-#    drive.robot.lM.setSpeed(100)
-#    drive.robot.rM.setSpeed(-100)
-#    play(funkytown, 1)
+def rotate():
+    drive.robot.lM.setSpeed(100)
+    drive.robot.rM.setSpeed(-100)
+    play(funkytown, 1)
+#DV this implementation is very ugly!
 
 medvedi = Matrix([
     [0, 100, 0, 100, 0],
@@ -13,7 +22,13 @@ medvedi = Matrix([
     [0, 100, 0, 100, 0],
     [0, 0, 0, 0, 0]
 ])
-
+downimg = Matrix([
+    [0, 100, 100, 0, 0],
+    [0, 100, 0, 100, 0],
+    [0, 100, 0, 100, 0],
+    [0, 100, 100, 100, 0],
+    [0, 0, 0, 0, 0]
+])
 labirinti = Matrix([
     [0, 100, 0, 0, 0],
     [0, 100, 0, 0, 0],
@@ -109,7 +124,7 @@ wroimg2 = Matrix([
     [0, 0, 0, 0, 0]
 ])
 
-testi = Matrix([
+test = Matrix([
     [0, 100, 100, 100, 0],
     [0, 0, 100, 0, 0],
     [0, 0, 100, 0, 0],
@@ -206,6 +221,3 @@ a6 = Matrix([
 ])
 
 arrow = [a1, a2, a3, a4, a5, a6]
-
-
-
