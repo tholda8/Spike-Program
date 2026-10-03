@@ -449,7 +449,7 @@ class DriveManager:
         """
         self.toPos(self.robot.pos + mat2.rotation(radians(angle)) * vec2(length,0), speed, backwards, background=background)
 
-    def straight(self, length, speed = 1000, background = False):
+    def straight(self, length, speed = 1000, backwards = False, background = False):
         """
         **Info**
         Drive straight forward or backward by a specified distance.
@@ -457,16 +457,10 @@ class DriveManager:
         **Parameters**
         - length: Signed distance to travel; negative values drive backward.
         - speed: Maximum driving speed.
+        - backwards: If True, drive in reverse.
         - background: If True, queue movement as a background task.
         """
-        if length >= 0:
-            backwards = False
-            shift = 0
-        else:
-            backwards = True
-            shift = pi
-        self.straightPolar(fabs(length), self.robot.hub.angleRad() + shift, backwards = backwards, speed = speed, background = background)
-
+        self.toPos(self.robot.pos + mat2.rotation(self.robot.hub.angleRad()) * vec2(length,0), speed, backwards, background=background)
 
 
 

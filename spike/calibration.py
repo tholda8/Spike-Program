@@ -17,15 +17,19 @@ calibrationI = Matrix([
 ])
 
 def tDistance():
+    drive.robot.hub.resetAngle()
+    
     drive.robot.pos = vec2(0, 0)
     print("")
     print("Running distance test:")
-    drive.straight(100)
-    print("End position: " + str(drive.robot.pos))
+    drive.straight(200)
+    print(drive.robot.pos)
     print("It was supposed to go 1m straight, if it is less then make the wheel radius smaller, and vice versa.")
     print("")
 
 def tTurn():
+    drive.robot.hub.resetAngle()
+    
     drive.robot.pos = vec2(0, 0)
     print("")
     print("Running turn test:")
@@ -33,6 +37,8 @@ def tTurn():
     print("")
     
 def tPos():
+    drive.robot.hub.resetAngle()
+    
     drive.robot.pos = vec2(0, 0)
     print("")
     print("Running toPos test:")
@@ -43,6 +49,8 @@ def tPos():
     print("")
 
 def tRide():
+    drive.robot.hub.resetAngle()
+    
     drive.robot.pos = vec2(0, 0)
     print("")
     print("Running ride (orientation) test:")
